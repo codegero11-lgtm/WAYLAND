@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<xacro:macro xmlns:xacro="http://www.ros.org/wiki/xacro" name="leg" params="leg_prefix">
+  <link name="${leg_prefix}_base_link"/>
+</xacro:macro>

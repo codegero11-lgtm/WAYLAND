@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<xacro:macro name="leg" params="prefix leg_coxa_length leg_femur_length leg_tibia_length joint_limits_coxa_lower joint_limits_coxa_upper joint_limits_femur_lower joint_limits_femur_upper joint_limits_tibia_lower joint_limits_tibia_upper">
+<xacro:macro xmlns:xacro="http://www.ros.org/wiki/xacro" name="leg" params="leg_prefix leg_coxa_length leg_femur_length leg_tibia_length joint_limits_coxa_lower joint_limits_coxa_upper joint_limits_femur_lower joint_limits_femur_upper joint_limits_tibia_lower joint_limits_tibia_upper">
   <xacro:property name="coxa_length" value="${leg_coxa_length}"/>
   <xacro:property name="femur_length" value="${leg_femur_length}"/>
   <xacro:property name="tibia_length" value="${leg_tibia_length}"/>
 
-  <link name="${prefix}_base_link">
+  <link name="${leg_prefix}_base_link">
     <inertial>
       <mass value="0.1"/>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -23,100 +23,90 @@
     </collision>
   </link>
 
-  <link name="${prefix}_coxa_link">
+  <link name="${leg_prefix}_coxa_link">
     <inertial>
       <mass value="0.05"/>
       <origin xyz="${coxa_length/2} 0 0" rpy="0 0 0"/>
       <inertia ixx="0.00005" ixy="0.0" ixz="0.0" iyy="0.00005" iyz="0.0" izz="0.00002"/>
     </inertial>
     <visual>
-      <origin xyz="${coxa_length/2} 0 0" rpy="0 0 0"/>
+      <origin xyz="${coxa_length/2} 0 0" rpy="0 1.5708 0"/>
       <geometry>
         <cylinder length="${coxa_length}" radius="0.01"/>
       </geometry>
       <material name="Blue"/>
     </visual>
     <collision>
-      <origin xyz="${coxa_length/2} 0 0" rpy="0 0 0"/>
+      <origin xyz="${coxa_length/2} 0 0" rpy="0 1.5708 0"/>
       <geometry>
         <cylinder length="${coxa_length}" radius="0.01"/>
       </geometry>
     </collision>
   </link>
 
-  <joint name="${prefix}_coxa_joint" type="revolute">
-    <parent link="${prefix}_base_link"/>
-    <child link="${prefix}_coxa_link"/>
+  <joint name="${leg_prefix}_coxa_joint" type="revolute">
+    <parent link="${leg_prefix}_base_link"/>
+    <child link="${leg_prefix}_coxa_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
     <limit lower="${joint_limits_coxa_lower}" upper="${joint_limits_coxa_upper}" effort="10" velocity="1.0"/>
   </joint>
 
-  <link name="${prefix}_femur_link">
+  <link name="${leg_prefix}_femur_link">
     <inertial>
       <mass value="0.05"/>
       <origin xyz="0 ${femur_length/2} 0" rpy="0 0 0"/>
       <inertia ixx="0.00005" ixy="0.0" ixz="0.0" iyy="0.00005" iyz="0.0" izz="0.00002"/>
     </inertial>
     <visual>
-      <origin xyz="0 ${femur_length/2} 0" rpy="0 0 0"/>
+      <origin xyz="0 ${femur_length/2} 0" rpy="1.5708 0 0"/>
       <geometry>
         <cylinder length="${femur_length}" radius="0.01"/>
       </geometry>
       <material name="Green"/>
     </visual>
     <collision>
-      <origin xyz="0 ${femur_length/2} 0" rpy="0 0 0"/>
+      <origin xyz="0 ${femur_length/2} 0" rpy="1.5708 0 0"/>
       <geometry>
         <cylinder length="${femur_length}" radius="0.01"/>
       </geometry>
     </collision>
   </link>
 
-  <joint name="${prefix}_femur_joint" type="revolute">
-    <parent link="${prefix}_coxa_link"/>
-    <child link="${prefix}_femur_link"/>
+  <joint name="${leg_prefix}_femur_joint" type="revolute">
+    <parent link="${leg_prefix}_coxa_link"/>
+    <child link="${leg_prefix}_femur_link"/>
     <origin xyz="${coxa_length} 0 0" rpy="0 0 0"/>
     <axis xyz="0 1 0"/>
     <limit lower="${joint_limits_femur_lower}" upper="${joint_limits_femur_upper}" effort="10" velocity="1.0"/>
   </joint>
 
-  <link name="${prefix}_tibia_link">
+  <link name="${leg_prefix}_tibia_link">
     <inertial>
       <mass value="0.05"/>
       <origin xyz="0 ${tibia_length/2} 0" rpy="0 0 0"/>
       <inertia ixx="0.00005" ixy="0.0" ixz="0.0" iyy="0.00005" iyz="0.0" izz="0.00002"/>
     </inertial>
     <visual>
-      <origin xyz="0 ${tibia_length/2} 0" rpy="0 0 0"/>
+      <origin xyz="0 ${tibia_length/2} 0" rpy="1.5708 0 0"/>
       <geometry>
         <cylinder length="${tibia_length}" radius="0.01"/>
       </geometry>
       <material name="Red"/>
     </visual>
     <collision>
-      <origin xyz="0 ${tibia_length/2} 0" rpy="0 0 0"/>
+      <origin xyz="0 ${tibia_length/2} 0" rpy="1.5708 0 0"/>
       <geometry>
         <cylinder length="${tibia_length}" radius="0.01"/>
       </geometry>
     </collision>
   </link>
 
-  <joint name="${prefix}_tibia_joint" type="revolute">
-    <parent link="${prefix}_femur_link"/>
-    <child link="${prefix}_tibia_link"/>
+  <joint name="${leg_prefix}_tibia_joint" type="revolute">
+    <parent link="${leg_prefix}_femur_link"/>
+    <child link="${leg_prefix}_tibia_link"/>
     <origin xyz="0 ${femur_length} 0" rpy="0 0 0"/>
     <axis xyz="0 1 0"/>
     <limit lower="${joint_limits_tibia_lower}" upper="${joint_limits_tibia_upper}" effort="10" velocity="1.0"/>
   </joint>
-
-  <gazebo>
-    <plugin name="gz_ros2_control" filename="libgz_ros2_control_gazebo.so">
-      <ros2_control>
-        <hardware>
-          <plugin>gz_ros2_control::GazeboSystem</plugin>
-        </hardware>
-      </ros2_control>
-    </plugin>
-  </gazebo>
 </xacro:macro>

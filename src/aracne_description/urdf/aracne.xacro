@@ -13,8 +13,29 @@
   <xacro:arg name="joint_limits_tibia_lower" default="-2.09"/>
   <xacro:arg name="joint_limits_tibia_upper" default="0.0"/>
 
+  <ros2_control name="aracne_leg1_controller" type="system">
+    <hardware>
+      <plugin>gz_ros2_control::GazeboSystem</plugin>
+    </hardware>
+    <joint name="leg1_coxa_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="leg1_femur_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="leg1_tibia_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+
   <xacro:leg
-    prefix="leg1"
+    leg_prefix="leg1"
     leg_coxa_length="${leg_coxa_length}"
     leg_femur_length="${leg_femur_length}"
     leg_tibia_length="${leg_tibia_length}"
@@ -25,4 +46,14 @@
     joint_limits_tibia_lower="${joint_limits_tibia_lower}"
     joint_limits_tibia_upper="${joint_limits_tibia_upper}"
   />
+
+  <gazebo>
+    <plugin name="gz_ros2_control" filename="libgz_ros2_control_gazebo.so">
+      <ros2_control>
+        <hardware>
+          <plugin>gz_ros2_control::GazeboSystem</plugin>
+        </hardware>
+      </ros2_control>
+    </plugin>
+  </gazebo>
 </robot>
