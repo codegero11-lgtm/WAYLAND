@@ -6,7 +6,7 @@
 
 - Projeto: WAYLAND
 - Mark atual: Mark I
-- Lote atual: Lote A
+- Lote atual: Lote B (em progresso)
 - Último lote concluído: Lote A
 - Marco atual: M1 — Build e testes unitários estáveis
 - Última atualização: 2026-08-06
@@ -29,13 +29,12 @@
 | Testes unitários | OK | `aracne_leg_kinematics`, `aracne_teleop` passam |
 | `aracne_teleop` | OK | utiliza `ament_cmake` e `install(PROGRAMS ...)` |
 | `ik_solver` | OK | biblioteca estática ligada ao nó e testes |
-| `IkResult` | OK | inicialização segura e fluxo de erro tratado |
-
+| `IkResult` | OK | inicialização segura e fluxo de erro tratado || URDF/Xacro | Em progresso | `aracne_description` atualizado para mover `ros2_control` ao nível do robô e corrigir orientação de cilindros |
 ## Bloqueadores atuais
 
-- Validação dos lotes seguintes (B, C, D, E) ainda não realizada.
+- Validação do Lote B ainda em progresso; execução de `xacro`/`check_urdf` e `colcon build` pendente por ambiente de execução.
 - O repositório contém modificações pré-existentes fora do escopo do Lote A e não foram alteradas.
 
 ## Próximo objetivo
 
-- Iniciar a análise do Lote B somente após aprovação explícita.
+- Completar a validação de Lote B (`xacro`, `check_urdf`, build de `aracne_description` e `aracne_bringup`) e, em seguida, atualizar a rastreabilidade.
