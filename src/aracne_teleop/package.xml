@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>aracne_teleop</name>
+  <version>0.1.0</version>
+  <description>Teleoperation node for Aracne Mark I.</description>
+  <maintainer email="user@example.com">Aracne Team</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+  <build_depend>rclpy</build_depend>
+  <build_depend>aracne_msgs</build_depend>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>aracne_msgs</exec_depend>
+
+</package>

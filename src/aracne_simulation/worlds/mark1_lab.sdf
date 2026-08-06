@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <world name="mark1_lab">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <physics name="default_physics" type="ode">
+      <real_time_update_rate>1000</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+    </physics>
+    <scene>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+    </scene>
+    <model name="bench_base">
+      <static>true</static>
+      <link name="bench_link">
+        <pose>0 0 0 0 0 0</pose>
+        <collision name="bench_collision">
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.02</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="bench_visual">
+          <geometry>
+            <box>
+              <size>0.5 0.5 0.02</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.2 0.2 0.2 1</ambient>
+            <diffuse>0.4 0.4 0.4 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>

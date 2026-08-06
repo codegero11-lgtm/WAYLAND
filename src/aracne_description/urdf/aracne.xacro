@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="aracne_leg1">
+  <xacro:include filename="materials.xacro"/>
+  <xacro:include filename="leg.xacro"/>
+
+  <xacro:arg name="leg_coxa_length" default="0.05"/>
+  <xacro:arg name="leg_femur_length" default="0.09"/>
+  <xacro:arg name="leg_tibia_length" default="0.11"/>
+  <xacro:arg name="joint_limits_coxa_lower" default="-1.57"/>
+  <xacro:arg name="joint_limits_coxa_upper" default="1.57"/>
+  <xacro:arg name="joint_limits_femur_lower" default="-0.78"/>
+  <xacro:arg name="joint_limits_femur_upper" default="1.57"/>
+  <xacro:arg name="joint_limits_tibia_lower" default="-2.09"/>
+  <xacro:arg name="joint_limits_tibia_upper" default="0.0"/>
+
+  <xacro:leg
+    prefix="leg1"
+    leg_coxa_length="${leg_coxa_length}"
+    leg_femur_length="${leg_femur_length}"
+    leg_tibia_length="${leg_tibia_length}"
+    joint_limits_coxa_lower="${joint_limits_coxa_lower}"
+    joint_limits_coxa_upper="${joint_limits_coxa_upper}"
+    joint_limits_femur_lower="${joint_limits_femur_lower}"
+    joint_limits_femur_upper="${joint_limits_femur_upper}"
+    joint_limits_tibia_lower="${joint_limits_tibia_lower}"
+    joint_limits_tibia_upper="${joint_limits_tibia_upper}"
+  />
+</robot>

@@ -1,0 +1,14 @@
+leg:
+  coxa_length: 0.05
+  femur_length: 0.09
+  tibia_length: 0.11
+  joint_limits:
+    coxa:
+      lower: -1.57
+      upper: 1.57
+    femur:
+      lower: -0.78
+      upper: 1.57
+    tibia:
+      lower: -2.09
+      upper: 0.0
