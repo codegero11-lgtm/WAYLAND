@@ -9,8 +9,8 @@ namespace aracne_leg_kinematics
 
 struct IkResult
 {
-  bool success;
-  std::array<double, 3> joint_angles;
+  bool success{false};
+  std::array<double, 3> joint_angles{{0.0, 0.0, 0.0}};
   std::string error_message;
 };
 

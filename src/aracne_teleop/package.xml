@@ -6,7 +6,7 @@
   <maintainer email="user@example.com">Aracne Team</maintainer>
   <license>Apache-2.0</license>
 
-  <buildtool_depend>ament_python</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
   <build_depend>rclpy</build_depend>
   <build_depend>aracne_msgs</build_depend>
 

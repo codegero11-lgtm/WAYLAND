@@ -1,0 +1,29 @@
+# ROS2/colcon generated build artifacts
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+ENV/
+env/
+.env/
+
+# Editor and OS files
+*.swp
+*~
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary files generated during local validation
+wsl_probe.txt
+t
+"l.exe -e bash -lc echo WSL_OK"
+"l.exe -e bash -lc pwd"

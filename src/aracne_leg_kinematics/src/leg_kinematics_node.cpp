@@ -62,7 +62,9 @@ private:
 
     const auto result = aracne_leg_kinematics::solve_ik(request->x, request->y, request->z, l1, l2, l3);
     response->success = result.success;
-    response->joint_angles = {result.joint_angles[0], result.joint_angles[1], result.joint_angles[2]};
+    if (result.success) {
+      response->joint_angles = {result.joint_angles[0], result.joint_angles[1], result.joint_angles[2]};
+    }
     response->error_message = result.error_message;
   }
 

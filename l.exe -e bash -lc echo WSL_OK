@@ -1,0 +1,485 @@
+[1mdiff --git a/src/aracne_leg_kinematics/CMakeLists.txt b/src/aracne_leg_kinematics/CMakeLists.txt[m
+[1mindex d0ce4e6..cc5cad7 100644[m
+[1m--- a/src/aracne_leg_kinematics/CMakeLists.txt[m
+[1m+++ b/src/aracne_leg_kinematics/CMakeLists.txt[m
+[36m@@ -1,40 +1,42 @@[m
+[31m-cmake_minimum_required(VERSION 3.22)[m
+[31m-project(aracne_leg_kinematics)[m
+[31m-[m
+[31m-find_package(ament_cmake REQUIRED)[m
+[31m-find_package(rclcpp REQUIRED)[m
+[31m-find_package(sensor_msgs REQUIRED)[m
+[31m-find_package(std_msgs REQUIRED)[m
+[31m-find_package(aracne_msgs REQUIRED)[m
+[31m-find_package(ament_cmake_gtest REQUIRED)[m
+[31m-[m
+[31m-add_library(ik_solver SHARED[m
+[31m-  src/ik_solver.cpp[m
+[31m-)[m
+[31m-[m
+[31m-target_include_directories(ik_solver PUBLIC[m
+[31m-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>[m
+[31m-  $<INSTALL_INTERFACE:include>[m
+[31m-)[m
+[31m-[m
+[31m-target_link_libraries(ik_solver PUBLIC)[m
+[31m-[m
+[31m-add_executable(leg_kinematics_node src/leg_kinematics_node.cpp)[m
+[31m-target_include_directories(leg_kinematics_node PUBLIC include)[m
+[31m-ament_target_dependencies(leg_kinematics_node[m
+[31m-  rclcpp[m
+[31m-  sensor_msgs[m
+[31m-  std_msgs[m
+[31m-  aracne_msgs[m
+[31m-)[m
+[31m-target_link_libraries(leg_kinematics_node PRIVATE ik_solver)[m
+[31m-[m
+[31m-install(TARGETS leg_kinematics_node[m
+[31m-  DESTINATION lib/${PROJECT_NAME}[m
+[31m-)[m
+[31m-[m
+[31m-install(DIRECTORY include/[m
+[31m-  DESTINATION include/[m
+[31m-)[m
+[31m-[m
+[31m-ament_package()[m
+[32m+[m[32mcmake_minimum_required(VERSION 3.22)[m[41m[m
+[32m+[m[32mproject(aracne_leg_kinematics)[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mfind_package(ament_cmake REQUIRED)[m[41m[m
+[32m+[m[32mfind_package(rclcpp REQUIRED)[m[41m[m
+[32m+[m[32mfind_package(sensor_msgs REQUIRED)[m[41m[m
+[32m+[m[32mfind_package(std_msgs REQUIRED)[m[41m[m
+[32m+[m[32mfind_package(aracne_msgs REQUIRED)[m[41m[m
+[32m+[m[32mfind_package(ament_cmake_gtest REQUIRED)[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32madd_library(ik_solver STATIC[m[41m[m
+[32m+[m[32m  src/ik_solver.cpp[m[41m[m
+[32m+[m[32m)[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mtarget_include_directories(ik_solver PUBLIC[m[41m[m
+[32m+[m[32m  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>[m[41m[m
+[32m+[m[32m)[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32madd_executable(leg_kinematics_node src/leg_kinematics_node.cpp)[m[41m[m
+[32m+[m[32mtarget_include_directories(leg_kinematics_node PUBLIC include)[m[41m[m
+[32m+[m[32mament_target_dependencies(leg_kinematics_node[m[41m[m
+[32m+[m[32m  rclcpp[m[41m[m
+[32m+[m[32m  sensor_msgs[m[41m[m
+[32m+[m[32m  std_msgs[m[41m[m
+[32m+[m[32m  aracne_msgs[m[41m[m
+[32m+[m[32m)[m[41m[m
+[32m+[m[32mtarget_link_libraries(leg_kinematics_node ik_solver)[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mament_add_gtest(test_ik_solver test/test_ik_solver.cpp)[m[41m[m
+[32m+[m[32mif(TARGET test_ik_solver)[m[41m[m
+[32m+[m[32m  target_link_libraries(test_ik_solver ik_solver)[m[41m[m
+[32m+[m[32mendif()[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32minstall(TARGETS leg_kinematics_node[m[41m[m
+[32m+[m[32m  DESTINATION lib/${PROJECT_NAME}[m[41m[m
+[32m+[m[32m)[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32minstall(DIRECTORY include/[m[41m[m
+[32m+[m[32m  DESTINATION include/[m[41m[m
+[32m+[m[32m)[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mament_package()[m[41m[m
+[1mdiff --git a/src/aracne_leg_kinematics/include/aracne_leg_kinematics/ik_solver.hpp b/src/aracne_leg_kinematics/include/aracne_leg_kinematics/ik_solver.hpp[m
+[1mindex a4f508d..e43d745 100644[m
+[1m--- a/src/aracne_leg_kinematics/include/aracne_leg_kinematics/ik_solver.hpp[m
+[1m+++ b/src/aracne_leg_kinematics/include/aracne_leg_kinematics/ik_solver.hpp[m
+[36m@@ -1,22 +1,22 @@[m
+[31m-#ifndef ARACNE_LEG_KINEMATICS_IK_SOLVER_HPP_[m
+[31m-#define ARACNE_LEG_KINEMATICS_IK_SOLVER_HPP_[m
+[31m-[m
+[31m-#include <string>[m
+[31m-#include <array>[m
+[31m-[m
+[31m-namespace aracne_leg_kinematics[m
+[31m-{[m
+[31m-[m
+[31m-struct IkResult[m
+[31m-{[m
+[31m-  bool success;[m
+[31m-  std::array<double, 3> joint_angles;[m
+[31m-  std::string error_message;[m
+[31m-};[m
+[31m-[m
+[31m-IkResult solve_ik(double x, double y, double z,[m
+[31m-                  double l1, double l2, double l3);[m
+[31m-[m
+[31m-}[m
+[31m-[m
+[31m-#endif  // ARACNE_LEG_KINEMATICS_IK_SOLVER_HPP_[m
+[32m+[m[32m#ifndef ARACNE_LEG_KINEMATICS_IK_SOLVER_HPP_[m[41m[m
+[32m+[m[32m#define ARACNE_LEG_KINEMATICS_IK_SOLVER_HPP_[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m#include <string>[m[41m[m
+[32m+[m[32m#include <array>[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mnamespace aracne_leg_kinematics[m[41m[m
+[32m+[m[32m{[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mstruct IkResult[m[41m[m
+[32m+[m[32m{[m[41m[m
+[32m+[m[32m  bool success{false};[m[41m[m
+[32m+[m[32m  std::array<double, 3> joint_angles{{0.0, 0.0, 0.0}};[m[41m[m
+[32m+[m[32m  std::string error_message;[m[41m[m
+[32m+[m[32m};[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mIkResult solve_ik(double x, double y, double z,[m[41m[m
+[32m+[m[32m                  double l1, double l2, double l3);[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m}[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m#endif  // ARACNE_LEG_KINEMATICS_IK_SOLVER_HPP_[m[41m[m
+[1mdiff --git a/src/aracne_leg_kinematics/src/leg_kinematics_node.cpp b/src/aracne_leg_kinematics/src/leg_kinematics_node.cpp[m
+[1mindex 5c20fc9..47e4943 100644[m
+[1m--- a/src/aracne_leg_kinematics/src/leg_kinematics_node.cpp[m
+[1m+++ b/src/aracne_leg_kinematics/src/leg_kinematics_node.cpp[m
+[36m@@ -1,80 +1,82 @@[m
+[31m-#include <memory>[m
+[31m-#include <vector>[m
+[31m-[m
+[31m-#include "rclcpp/rclcpp.hpp"[m
+[31m-#include "sensor_msgs/msg/joint_state.hpp"[m
+[31m-#include "aracne_msgs/msg/leg_target.hpp"[m
+[31m-#include "aracne_msgs/srv/compute_ik.hpp"[m
+[31m-#include "aracne_leg_kinematics/ik_solver.hpp"[m
+[31m-[m
+[31m-class LegKinematicsNode : public rclcpp::Node[m
+[31m-{[m
+[31m-public:[m
+[31m-  LegKinematicsNode()[m
+[31m-  : Node("leg_kinematics_node")[m
+[31m-  {[m
+[31m-    target_pose_subscriber_ = this->create_subscription<aracne_msgs::msg::LegTarget>([m
+[31m-      "/aracne/leg/target_pose",[m
+[31m-      10,[m
+[31m-      std::bind(&LegKinematicsNode::on_target_pose, this, std::placeholders::_1));[m
+[31m-[m
+[31m-    joint_angles_publisher_ = this->create_publisher<sensor_msgs::msg::JointState>([m
+[31m-      "/aracne/leg/joint_angles", 10);[m
+[31m-[m
+[31m-    compute_ik_service_ = this->create_service<aracne_msgs::srv::ComputeIK>([m
+[31m-      "/aracne/leg/compute_ik",[m
+[31m-      std::bind(&LegKinematicsNode::on_compute_ik, this,[m
+[31m-        std::placeholders::_1, std::placeholders::_2));[m
+[31m-[m
+[31m-    this->declare_parameter<double>("leg_dimensions.coxa_length", 0.05);[m
+[31m-    this->declare_parameter<double>("leg_dimensions.femur_length", 0.09);[m
+[31m-    this->declare_parameter<double>("leg_dimensions.tibia_length", 0.11);[m
+[31m-  }[m
+[31m-[m
+[31m-private:[m
+[31m-  void on_target_pose(const aracne_msgs::msg::LegTarget::SharedPtr msg)[m
+[31m-  {[m
+[31m-    const double l1 = this->get_parameter("leg_dimensions.coxa_length").as_double();[m
+[31m-    const double l2 = this->get_parameter("leg_dimensions.femur_length").as_double();[m
+[31m-    const double l3 = this->get_parameter("leg_dimensions.tibia_length").as_double();[m
+[31m-[m
+[31m-    const auto result = aracne_leg_kinematics::solve_ik(msg->x, msg->y, msg->z, l1, l2, l3);[m
+[31m-[m
+[31m-    if (!result.success) {[m
+[31m-      RCLCPP_WARN(this->get_logger(), "IK failure: %s", result.error_message.c_str());[m
+[31m-      return;[m
+[31m-    }[m
+[31m-[m
+[31m-    sensor_msgs::msg::JointState joint_state;[m
+[31m-    joint_state.name = {"leg1_coxa_joint", "leg1_femur_joint", "leg1_tibia_joint"};[m
+[31m-    joint_state.position = {result.joint_angles[0], result.joint_angles[1], result.joint_angles[2]};[m
+[31m-[m
+[31m-    joint_angles_publisher_->publish(joint_state);[m
+[31m-  }[m
+[31m-[m
+[31m-  void on_compute_ik([m
+[31m-    const std::shared_ptr<aracne_msgs::srv::ComputeIK::Request> request,[m
+[31m-    std::shared_ptr<aracne_msgs::srv::ComputeIK::Response> response)[m
+[31m-  {[m
+[31m-    const double l1 = this->get_parameter("leg_dimensions.coxa_length").as_double();[m
+[31m-    const double l2 = this->get_parameter("leg_dimensions.femur_length").as_double();[m
+[31m-    const double l3 = this->get_parameter("leg_dimensions.tibia_length").as_double();[m
+[31m-[m
+[31m-    const auto result = aracne_leg_kinematics::solve_ik(request->x, request->y, request->z, l1, l2, l3);[m
+[31m-    response->success = result.success;[m
+[31m-    response->joint_angles = {result.joint_angles[0], result.joint_angles[1], result.joint_angles[2]};[m
+[31m-    response->error_message = result.error_message;[m
+[31m-  }[m
+[31m-[m
+[31m-  rclcpp::Subscription<aracne_msgs::msg::LegTarget>::SharedPtr target_pose_subscriber_;[m
+[31m-  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_angles_publisher_;[m
+[31m-  rclcpp::Service<aracne_msgs::srv::ComputeIK>::SharedPtr compute_ik_service_;[m
+[31m-};[m
+[31m-[m
+[31m-int main(int argc, char ** argv)[m
+[31m-{[m
+[31m-  rclcpp::init(argc, argv);[m
+[31m-  rclcpp::spin(std::make_shared<LegKinematicsNode>());[m
+[31m-  rclcpp::shutdown();[m
+[31m-  return 0;[m
+[31m-}[m
+[32m+[m[32m#include <memory>[m[41m[m
+[32m+[m[32m#include <vector>[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m#include "rclcpp/rclcpp.hpp"[m[41m[m
+[32m+[m[32m#include "sensor_msgs/msg/joint_state.hpp"[m[41m[m
+[32m+[m[32m#include "aracne_msgs/msg/leg_target.hpp"[m[41m[m
+[32m+[m[32m#include "aracne_msgs/srv/compute_ik.hpp"[m[41m[m
+[32m+[m[32m#include "aracne_leg_kinematics/ik_solver.hpp"[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mclass LegKinematicsNode : public rclcpp::Node[m[41m[m
+[32m+[m[32m{[m[41m[m
+[32m+[m[32mpublic:[m[41m[m
+[32m+[m[32m  LegKinematicsNode()[m[41m[m
+[32m+[m[32m  : Node("leg_kinematics_node")[m[41m[m
+[32m+[m[32m  {[m[41m[m
+[32m+[m[32m    target_pose_subscriber_ = this->create_subscription<aracne_msgs::msg::LegTarget>([m[41m[m
+[32m+[m[32m      "/aracne/leg/target_pose",[m[41m[m
+[32m+[m[32m      10,[m[41m[m
+[32m+[m[32m      std::bind(&LegKinematicsNode::on_target_pose, this, std::placeholders::_1));[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    joint_angles_publisher_ = this->create_publisher<sensor_msgs::msg::JointState>([m[41m[m
+[32m+[m[32m      "/aracne/leg/joint_angles", 10);[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    compute_ik_service_ = this->create_service<aracne_msgs::srv::ComputeIK>([m[41m[m
+[32m+[m[32m      "/aracne/leg/compute_ik",[m[41m[m
+[32m+[m[32m      std::bind(&LegKinematicsNode::on_compute_ik, this,[m[41m[m
+[32m+[m[32m        std::placeholders::_1, std::placeholders::_2));[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    this->declare_parameter<double>("leg_dimensions.coxa_length", 0.05);[m[41m[m
+[32m+[m[32m    this->declare_parameter<double>("leg_dimensions.femur_length", 0.09);[m[41m[m
+[32m+[m[32m    this->declare_parameter<double>("leg_dimensions.tibia_length", 0.11);[m[41m[m
+[32m+[m[32m  }[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mprivate:[m[41m[m
+[32m+[m[32m  void on_target_pose(const aracne_msgs::msg::LegTarget::SharedPtr msg)[m[41m[m
+[32m+[m[32m  {[m[41m[m
+[32m+[m[32m    const double l1 = this->get_parameter("leg_dimensions.coxa_length").as_double();[m[41m[m
+[32m+[m[32m    const double l2 = this->get_parameter("leg_dimensions.femur_length").as_double();[m[41m[m
+[32m+[m[32m    const double l3 = this->get_parameter("leg_dimensions.tibia_length").as_double();[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    const auto result = aracne_leg_kinematics::solve_ik(msg->x, msg->y, msg->z, l1, l2, l3);[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    if (!result.success) {[m[41m[m
+[32m+[m[32m      RCLCPP_WARN(this->get_logger(), "IK failure: %s", result.error_message.c_str());[m[41m[m
+[32m+[m[32m      return;[m[41m[m
+[32m+[m[32m    }[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    sensor_msgs::msg::JointState joint_state;[m[41m[m
+[32m+[m[32m    joint_state.name = {"leg1_coxa_joint", "leg1_femur_joint", "leg1_tibia_joint"};[m[41m[m
+[32m+[m[32m    joint_state.position = {result.joint_angles[0], result.joint_angles[1], result.joint_angles[2]};[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    joint_angles_publisher_->publish(joint_state);[m[41m[m
+[32m+[m[32m  }[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m  void on_compute_ik([m[41m[m
+[32m+[m[32m    const std::shared_ptr<aracne_msgs::srv::ComputeIK::Request> request,[m[41m[m
+[32m+[m[32m    std::shared_ptr<aracne_msgs::srv::ComputeIK::Response> response)[m[41m[m
+[32m+[m[32m  {[m[41m[m
+[32m+[m[32m    const double l1 = this->get_parameter("leg_dimensions.coxa_length").as_double();[m[41m[m
+[32m+[m[32m    const double l2 = this->get_parameter("leg_dimensions.femur_length").as_double();[m[41m[m
+[32m+[m[32m    const double l3 = this->get_parameter("leg_dimensions.tibia_length").as_double();[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    const auto result = aracne_leg_kinematics::solve_ik(request->x, request->y, request->z, l1, l2, l3);[m[41m[m
+[32m+[m[32m    response->success = result.success;[m[41m[m
+[32m+[m[32m    if (result.success) {[m[41m[m
+[32m+[m[32m      response->joint_angles = {result.joint_angles[0], result.joint_angles[1], result.joint_angles[2]};[m[41m[m
+[32m+[m[32m    }[m[41m[m
+[32m+[m[32m    response->error_message = result.error_message;[m[41m[m
+[32m+[m[32m  }[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m  rclcpp::Subscription<aracne_msgs::msg::LegTarget>::SharedPtr target_pose_subscriber_;[m[41m[m
+[32m+[m[32m  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_angles_publisher_;[m[41m[m
+[32m+[m[32m  rclcpp::Service<aracne_msgs::srv::ComputeIK>::SharedPtr compute_ik_service_;[m[41m[m
+[32m+[m[32m};[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mint main(int argc, char ** argv)[m[41m[m
+[32m+[m[32m{[m[41m[m
+[32m+[m[32m  rclcpp::init(argc, argv);[m[41m[m
+[32m+[m[32m  rclcpp::spin(std::make_shared<LegKinematicsNode>());[m[41m[m
+[32m+[m[32m  rclcpp::shutdown();[m[41m[m
+[32m+[m[32m  return 0;[m[41m[m
+[32m+[m[32m}[m[41m[m
+[1mdiff --git a/src/aracne_leg_kinematics/test/test_ik_solver.cpp b/src/aracne_leg_kinematics/test/test_ik_solver.cpp[m
+[1mindex 435a57e..a3c8dfa 100644[m
+[1m--- a/src/aracne_leg_kinematics/test/test_ik_solver.cpp[m
+[1m+++ b/src/aracne_leg_kinematics/test/test_ik_solver.cpp[m
+[36m@@ -1,36 +1,37 @@[m
+[31m-#include <gtest/gtest.h>[m
+[31m-#include "aracne_leg_kinematics/ik_solver.hpp"[m
+[31m-[m
+[31m-TEST(IkSolverTest, DownwardTarget)[m
+[31m-{[m
+[31m-  auto result = aracne_leg_kinematics::solve_ik(0.05, 0.0, -0.11, 0.05, 0.09, 0.11);[m
+[31m-  EXPECT_TRUE(result.success);[m
+[31m-  EXPECT_NEAR(result.joint_angles[0], 0.0, 1e-6);[m
+[31m-}[m
+[31m-[m
+[31m-TEST(IkSolverTest, MaximumReach)[m
+[31m-{[m
+[31m-  const double d = 0.09 + 0.11;[m
+[31m-  auto result = aracne_leg_kinematics::solve_ik(0.05 + d, 0.0, 0.0, 0.05, 0.09, 0.11);[m
+[31m-  EXPECT_TRUE(result.success);[m
+[31m-}[m
+[31m-[m
+[31m-TEST(IkSolverTest, UnreachableTarget)[m
+[31m-{[m
+[31m-  auto result = aracne_leg_kinematics::solve_ik(0.05 + 0.2, 0.0, 0.0, 0.05, 0.09, 0.11);[m
+[31m-  EXPECT_FALSE(result.success);[m
+[31m-  EXPECT_FALSE(result.error_message.empty());[m
+[31m-}[m
+[31m-[m
+[31m-TEST(IkSolverTest, NegativeTheta1)[m
+[31m-{[m
+[31m-  auto result = aracne_leg_kinematics::solve_ik(0.05, -0.05, -0.05, 0.05, 0.09, 0.11);[m
+[31m-  EXPECT_TRUE(result.success);[m
+[31m-  EXPECT_LT(result.joint_angles[0], 0.0);[m
+[31m-}[m
+[31m-[m
+[31m-TEST(IkSolverTest, ReferencePose)[m
+[31m-{[m
+[31m-  auto result = aracne_leg_kinematics::solve_ik(0.05 + 0.05, 0.0, -0.05, 0.05, 0.09, 0.11);[m
+[31m-  EXPECT_TRUE(result.success);[m
+[31m-}[m
+[32m+[m[32m#include <gtest/gtest.h>[m[41m[m
+[32m+[m[32m#include "aracne_leg_kinematics/ik_solver.hpp"[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mTEST(IkSolverTest, DownwardTarget)[m[41m[m
+[32m+[m[32m{[m[41m[m
+[32m+[m[32m  auto result = aracne_leg_kinematics::solve_ik(0.05, 0.0, -0.11, 0.05, 0.09, 0.11);[m[41m[m
+[32m+[m[32m  EXPECT_TRUE(result.success);[m[41m[m
+[32m+[m[32m  EXPECT_NEAR(result.joint_angles[0], 0.0, 1e-6);[m[41m[m
+[32m+[m[32m}[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mTEST(IkSolverTest, MaximumReach)[m[41m[m
+[32m+[m[32m{[m[41m[m
+[32m+[m[32m  const double d = 0.09 + 0.11;[m[41m[m
+[32m+[m[32m  auto result = aracne_leg_kinematics::solve_ik(0.05 + d, 0.0, 0.0, 0.05, 0.09, 0.11);[m[41m[m
+[32m+[m[32m  EXPECT_TRUE(result.success);[m[41m[m
+[32m+[m[32m}[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mTEST(IkSolverTest, UnreachableTarget)[m[41m[m
+[32m+[m[32m{[m[41m[m
+[32m+[m[32m  // A point well beyond the two-link reach after the coxa offset.[m[41m[m
+[32m+[m[32m  auto result = aracne_leg_kinematics::solve_ik(0.5, 0.0, 0.0, 0.05, 0.09, 0.11);[m[41m[m
+[32m+[m[32m  EXPECT_FALSE(result.success);[m[41m[m
+[32m+[m[32m  EXPECT_FALSE(result.error_message.empty());[m[41m[m
+[32m+[m[32m}[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mTEST(IkSolverTest, NegativeTheta1)[m[41m[m
+[32m+[m[32m{[m[41m[m
+[32m+[m[32m  auto result = aracne_leg_kinematics::solve_ik(0.05, -0.05, -0.05, 0.05, 0.09, 0.11);[m[41m[m
+[32m+[m[32m  EXPECT_TRUE(result.success);[m[41m[m
+[32m+[m[32m  EXPECT_LT(result.joint_angles[0], 0.0);[m[41m[m
+[32m+[m[32m}[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mTEST(IkSolverTest, ReferencePose)[m[41m[m
+[32m+[m[32m{[m[41m[m
+[32m+[m[32m  auto result = aracne_leg_kinematics::solve_ik(0.05 + 0.05, 0.0, -0.05, 0.05, 0.09, 0.11);[m[41m[m
+[32m+[m[32m  EXPECT_TRUE(result.success);[m[41m[m
+[32m+[m[32m}[m[41m[m
+[1mdiff --git a/src/aracne_teleop/package.xml b/src/aracne_teleop/package.xml[m
+[1mindex 44f54fb..db405a1 100644[m
+[1m--- a/src/aracne_teleop/package.xml[m
+[1m+++ b/src/aracne_teleop/package.xml[m
+[36m@@ -1,16 +1,16 @@[m
+[31m-<?xml version="1.0"?>[m
+[31m-<package format="3">[m
+[31m-  <name>aracne_teleop</name>[m
+[31m-  <version>0.1.0</version>[m
+[31m-  <description>Teleoperation node for Aracne Mark I.</description>[m
+[31m-  <maintainer email="user@example.com">Aracne Team</maintainer>[m
+[31m-  <license>Apache-2.0</license>[m
+[31m-[m
+[31m-  <buildtool_depend>ament_python</buildtool_depend>[m
+[31m-  <build_depend>rclpy</build_depend>[m
+[31m-  <build_depend>aracne_msgs</build_depend>[m
+[31m-[m
+[31m-  <exec_depend>rclpy</exec_depend>[m
+[31m-  <exec_depend>aracne_msgs</exec_depend>[m
+[31m-[m
+[31m-</package>[m
+[32m+[m[32m<?xml version="1.0"?>[m[41m[m
+[32m+[m[32m<package format="3">[m[41m[m
+[32m+[m[32m  <name>aracne_teleop</name>[m[41m[m
+[32m+[m[32m  <version>0.1.0</version>[m[41m[m
+[32m+[m[32m  <description>Teleoperation node for Aracne Mark I.</description>[m[41m[m
+[32m+[m[32m  <maintainer email="user@example.com">Aracne Team</maintainer>[m[41m[m
+[32m+[m[32m  <license>Apache-2.0</license>[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m  <buildtool_depend>ament_cmake</buildtool_depend>[m[41m[m
+[32m+[m[32m  <build_depend>rclpy</build_depend>[m[41m[m
+[32m+[m[32m  <build_depend>aracne_msgs</build_depend>[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m  <exec_depend>rclpy</exec_depend>[m[41m[m
+[32m+[m[32m  <exec_depend>aracne_msgs</exec_depend>[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m</package>[m[41m[m
+[1mdiff --git a/src/aracne_teleop/scripts/teleop_node.py b/src/aracne_teleop/scripts/teleop_node.py[m
+[1mindex 0fbcbd5..bd02767 100644[m
+[1m--- a/src/aracne_teleop/scripts/teleop_node.py[m
+[1m+++ b/src/aracne_teleop/scripts/teleop_node.py[m
+[36m@@ -1,31 +1,31 @@[m
+[31m-#!/usr/bin/env python3[m
+[31m-import rclpy[m
+[31m-from rclpy.node import Node[m
+[31m-from aracne_msgs.msg import TeleopCmd[m
+[31m-[m
+[31m-class TeleopNode(Node):[m
+[31m-    def __init__(self):[m
+[31m-        super().__init__('teleop_node')[m
+[31m-        self.publisher_ = self.create_publisher(TeleopCmd, '/aracne/teleop/cmd', 10)[m
+[31m-        self.timer = self.create_timer(1.0, self.publish_command)[m
+[31m-        self.declare_parameter('delta_x', 0.0)[m
+[31m-        self.declare_parameter('delta_y', 0.0)[m
+[31m-        self.declare_parameter('delta_z', 0.0)[m
+[31m-[m
+[31m-    def publish_command(self):[m
+[31m-        msg = TeleopCmd()[m
+[31m-        msg.delta_x = self.get_parameter('delta_x').value[m
+[31m-        msg.delta_y = self.get_parameter('delta_y').value[m
+[31m-        msg.delta_z = self.get_parameter('delta_z').value[m
+[31m-        self.publisher_.publish(msg)[m
+[31m-[m
+[31m-[m
+[31m-def main(args=None):[m
+[31m-    rclpy.init(args=args)[m
+[31m-    node = TeleopNode()[m
+[31m-    rclpy.spin(node)[m
+[31m-    node.destroy_node()[m
+[31m-    rclpy.shutdown()[m
+[31m-[m
+[31m-if __name__ == '__main__':[m
+[31m-    main()[m
+[32m+[m[32m#!/usr/bin/env python3[m[41m[m
+[32m+[m[32mimport rclpy[m[41m[m
+[32m+[m[32mfrom rclpy.node import Node[m[41m[m
+[32m+[m[32mfrom aracne_msgs.msg import TeleopCmd[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mclass TeleopNode(Node):[m[41m[m
+[32m+[m[32m    def __init__(self):[m[41m[m
+[32m+[m[32m        super().__init__('teleop_node')[m[41m[m
+[32m+[m[32m        self.publisher_ = self.create_publisher(TeleopCmd, '/aracne/teleop/cmd', 10)[m[41m[m
+[32m+[m[32m        self.timer = self.create_timer(1.0, self.publish_command)[m[41m[m
+[32m+[m[32m        self.declare_parameter('delta_x', 0.0)[m[41m[m
+[32m+[m[32m        self.declare_parameter('delta_y', 0.0)[m[41m[m
+[32m+[m[32m        self.declare_parameter('delta_z', 0.0)[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m    def publish_command(self):[m[41m[m
+[32m+[m[32m        msg = TeleopCmd()[m[41m[m
+[32m+[m[32m        msg.delta_x = self.get_parameter('delta_x').value[m[41m[m
+[32m+[m[32m        msg.delta_y = self.get_parameter('delta_y').value[m[41m[m
+[32m+[m[32m        msg.delta_z = self.get_parameter('delta_z').value[m[41m[m
+[32m+[m[32m        self.publisher_.publish(msg)[m[41m[m
+[32m+[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mdef main(args=None):[m[41m[m
+[32m+[m[32m    rclpy.init(args=args)[m[41m[m
+[32m+[m[32m    node = TeleopNode()[m[41m[m
+[32m+[m[32m    rclpy.spin(node)[m[41m[m
+[32m+[m[32m    node.destroy_node()[m[41m[m
+[32m+[m[32m    rclpy.shutdown()[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mif __name__ == '__main__':[m[41m[m
+[32m+[m[32m    main()[m[41m[m

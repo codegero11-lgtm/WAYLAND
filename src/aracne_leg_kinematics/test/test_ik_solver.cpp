@@ -17,7 +17,8 @@ TEST(IkSolverTest, MaximumReach)
 
 TEST(IkSolverTest, UnreachableTarget)
 {
-  auto result = aracne_leg_kinematics::solve_ik(0.05 + 0.2, 0.0, 0.0, 0.05, 0.09, 0.11);
+  // A point well beyond the two-link reach after the coxa offset.
+  auto result = aracne_leg_kinematics::solve_ik(0.5, 0.0, 0.0, 0.05, 0.09, 0.11);
   EXPECT_FALSE(result.success);
   EXPECT_FALSE(result.error_message.empty());
 }
