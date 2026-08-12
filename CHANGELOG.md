@@ -35,6 +35,33 @@
 - TF `leg1_base_link → leg1_coxa_link → leg1_femur_link → leg1_tibia_link`; `view_frames` ~20 Hz.
 - Build dos 3 pacotes (`aracne_description`, `aracne_simulation`, `aracne_bringup`) PASS; `py_compile` PASS.
 
+### Lote D — Saneamento do bridge legado, parâmetros do leg_kinematics_node e CRLF
+
+#### Changed
+
+- `aracne_bringup/config/mark1_params.yaml`: parâmetros reestruturados no formato ROS2 padrão (`leg_kinematics_node: ros__parameters: leg_dimensions:`) — corrige a falha de parse do `leg_kinematics_node` (D1).
+- `aracne_teleop/scripts/teleop_node.py` e `aracne_bringup/scripts/teleop_bridge.py`: normalização CRLF → LF (conteúdo lógico preservado) (D2).
+- `aracne_simulation/config/bridge_mark1.yaml`: removida a entrada legada `/aracne/leg/joint_angles` (GZ_TO_ROS), que não possuía `gz_type_name`, referenciava `/model/aracne_leg/...` desatualizado e poderia criar múltiplos publishers no tópico (D3). `/clock` preservado.
+
+#### Fixed
+
+- Shebang dos scripts de teleop quebrado por CRLF (`/usr/bin/env: 'python3\r'`) → eliminado pela normalização CRLF→LF (D2).
+- `parameter_bridge` emitia `[BridgeConfig] ... both ros_type_name and gz_type_name must be set` → eliminado pela remoção da entrada legada (D3).
+
+#### Added
+
+- Nenhuma bridge nova foi adicionada.
+
+#### Validado (runtime, pelo operador)
+
+- `leg_kinematics_node`, `teleop_node.py` e `teleop_bridge.py` iniciam (`process started`), sem `python3\r` e sem falha de parse de `mark1_params.yaml`.
+- `[ros_gz_bridge]` criou `/clock (gz.msgs.Clock) -> /clock (rosgraph_msgs/msg/Clock)`; a mensagem `both ros_type_name and gz_type_name must be set` **não** apareceu mais.
+- `joint_trajectory_controller` e `joint_state_broadcaster` permanecem **active**.
+- `/aracne/leg/joint_angles`: Publisher count 1 (`leg_kinematics_node`), Subscription count 0.
+- `/joint_states`: Publisher count 1 (`joint_state_broadcaster`), Subscription count 1; três juntas (`leg1_coxa_joint`, `leg1_femur_joint`, `leg1_tibia_joint`).
+- TF `leg1_base_link → leg1_coxa_link → leg1_femur_link → leg1_tibia_link`: sem regressão após o Lote D.
+- Build `colcon --packages-select aracne_simulation aracne_bringup`: PASS (2 pkgs).
+
 ### Fixed (Lote B / B.1)
 
 - `aracne_leg_kinematics`: `ik_solver` convertido para biblioteca `STATIC` e vinculado corretamente ao nó e aos testes.

@@ -1,14 +1,14 @@
 # WAYLAND — Current Status
 
-> Este arquivo representa o estado validado do Mark I após a conclusão do Lote C (spawn + controllers no Gazebo Harmonic).
+> Este arquivo representa o estado validado do Mark I após a conclusão do Lote D (saneamento de parâmetros, CRLF e bridge legado).
 
 ## Identificação
 
 - Projeto: WAYLAND
 - Mark atual: Mark I
-- Lote atual: Lote C (concluído) — aguardando próximo lote
-- Último lote concluído: Lote C
-- Marco atual: M2 — Spawn do Mark I no Gazebo + broadcasters/controllers ativos
+- Lote atual: Lote D (concluído) — aguardando próximo lote
+- Último lote concluído: Lote D
+- Marco atual: M3 — Mark I com saneamento de startup concluído (parâmetros, CRLF, bridge legado)
 - Última atualização: 2026-08-12
 
 ## Ambiente
@@ -31,17 +31,23 @@
 | `robot_state_publisher` | OK | publica `robot_description` (Command do xacro) + TF |
 | Bridge `/clock` | OK | `parameter_bridge` criou `/clock` (GZ→ROS); `controller_manager` parou de emitir "No clock received" |
 | `joint_state_broadcaster` | OK (active) | 2º spawner (t=7.0s); publicado `/joint_states` com 3 juntas |
-| `joint_trajectory_controller` | OK (active) | `action_monitor_rate: 10.0`; load/config/activate confirmados |
-| TF | OK | `leg1_base_link → leg1_coxa_link → leg1_femur_link → leg1_tibia_link`; `view_frames` ~20 Hz |
+| `joint_trajectory_controller` | OK (active) | `action_monitor_rate: 10.0`; load/config/activate confirmados; continua active após Lote D |
+| TF | OK | `leg1_base_link → leg1_coxa_link → leg1_femur_link → leg1_tibia_link`; `view_frames` ~20 Hz; sem regressão após Lote D |
+| `leg_kinematics_node` | OK (runtime) | inicia após saneamento de `mark1_params.yaml` (D1); falha de parse eliminada |
+| `teleop_node.py` | OK (runtime) | inicia após normalização CRLF (D2) |
+| `teleop_bridge.py` | OK (runtime) | inicia após normalização CRLF (D2) |
+| `/aracne/leg/joint_angles` | OK | `sensor_msgs/msg/JointState`; Publisher count: 1 (leg_kinematics_node); Subscription count: 0 |
+| Erro CRLF (`python3\r`) | Eliminado | scripts de teleop em LF; startup limpo |
+| Erro parsing bridge legado | Eliminado | entrada `joint_angles` removida em `bridge_mark1.yaml`; `parameter_bridge` sem "both ros_type_name and gz_type_name must be set"; `/clock` preservado |
+
 ## Bloqueadores atuais
 
-- `mark1_params.yaml`: `leg_kinematics_node` falha no parse (`Cannot have a value before ros__parameters`) — dívida técnica para lote seguinte.
-- CRLF nos scripts `teleop_node.py` e `teleop_bridge.py` (`/usr/bin/env: 'python3\r'`) — dívida técnica.
-- Bridge legado `/aracne/leg/joint_angles` (`ros_type_name`/`gz_type_name` incompleto) — não tratado deliberadamente.
+- Elo ponta-a-ponta **AINDA NÃO validado**: `IK → comando aceito pelo JointTrajectoryController → movimento físico/simulado da perna → feedback coerente em /joint_states`. Pertence ao próximo estágio (Lote E).
 - Overlay/`AMENT_PREFIX_PATH` exigindo source explícito de `local_setup.bash` — problema de ambiente documentado.
 - `GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ros/jazzy/lib` necessário para `libgz_ros2_control-system.so`.
 - Warning KDL (root link com inertia) e warning de controller update period (0.01 s) vs sim (0.001 s) — não bloqueiam.
+
 ## Próximo objetivo
 
-- Próximo lote: resolver as dívidas remanescentes (mark1_params.yaml, CRLF, bridge legado, overlay) e, em seguida, pipeline de comando de junta (joint_states→IK→teleop) — recomendado após aprovação.
+- Próximo lote (Lote E): fechamento do primeiro pipeline de movimento da Mark I — `target_pose/IK → joint targets → JointTrajectoryController → gz_ros2_control → juntas no Gazebo → /joint_states`. O nome e a decomposição definitivos podem ser definidos após análise estática. Não implementado ainda.
 

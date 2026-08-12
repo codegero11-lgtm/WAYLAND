@@ -1,4 +1,6 @@
-leg_dimensions:
-  coxa_length: 0.05
-  femur_length: 0.09
-  tibia_length: 0.11
+leg_kinematics_node:
+  ros__parameters:
+    leg_dimensions:
+      coxa_length: 0.05
+      femur_length: 0.09
+      tibia_length: 0.11

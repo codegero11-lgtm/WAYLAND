@@ -87,10 +87,46 @@ Summary: 3 packages finished ...
 - `/joint_states` → 3 juntas (position/velocity).
 - `/tf` e `view_frames` → cadeia base→coxa→femur→tibia (~20.312 Hz).
 
+## Status do Lote D (concluído)
+
+| ID | Requisito | Documento de origem | Pacote | Arquivo principal | Teste | Evidência | Status | Lote |
+|---|---|---|---|---|---|---|---|---|
+| R-M1-D01 | `mark1_params.yaml` em formato ROS2 padrão para o `leg_kinematics_node` | LOTES/LOTE_D.md | `aracne_bringup` | `config/mark1_params.yaml` | runtime manual | `[INFO] [leg_kinematics_node-7]: process started ...`; falha de parse de `mark1_params.yaml` não ocorre mais | VALIDADO | D |
+| R-M1-D02 | Scripts `teleop_node.py`/`teleop_bridge.py` sem CRLF e iniciando | LOTES/LOTE_D.md | `aracne_teleop`, `aracne_bringup` | `scripts/teleop_node.py`, `scripts/teleop_bridge.py` | estático + build + runtime | `git diff --ignore-cr-at-eol` vazio (lógica preservada); `file -b` sem CRLF; `py_compile` PASS; build PASS; `[INFO] [teleop_node.py-8]: process started ...` e `[INFO] [teleop_bridge.py-9]: process started ...`; erro `python3\r` não ocorre mais | VALIDADO | D |
+| R-M1-D03 | Bridge legado `/aracne/leg/joint_angles` removido; `/clock` preservado | LOTES/LOTE_D.md | `aracne_simulation` | `config/bridge_mark1.yaml` | estático + build + runtime | `parameter_bridge` cria `/clock (gz.msgs.Clock) → /clock (rosgraph_msgs/msg/Clock)` sem `both ros_type_name and gz_type_name must be set`; entrada legada removida | VALIDADO | D |
+| R-M1-D04 | Controllers e feedback preservados após Lote D | LOTES/LOTE_D.md | `aracne_bringup` | `launch/mark1.launch.py` | runtime manual | `ros2 control list_controllers` → `joint_trajectory_controller` e `joint_state_broadcaster` **active**; `/joint_states` Publisher count 1 | VALIDADO | D |
+
+### Evidências — Lote D
+
+**Validação estática (D2):**
+```bash
+file -b src/aracne_teleop/scripts/teleop_node.py src/aracne_bringup/scripts/teleop_bridge.py   # sem CRLF
+git diff --ignore-cr-at-eol ...   # diff vazio = conteúdo lógico preservado
+git diff --check escopado         # PASS
+python3 -m py_compile ...         # PASS
+```
+
+**Validação de build:**
+```bash
+source /opt/ros/jazzy/setup.bash
+colcon build --symlink-install --packages-select aracne_simulation aracne_bringup
+# Summary: 2 packages finished ...
+```
+
+**Evidências de runtime (fornecidas pelo operador):**
+- `[INFO] [leg_kinematics_node-7]: process started ...`
+- `[INFO] [teleop_node.py-8]: process started ...`; `[INFO] [teleop_bridge.py-9]: process started ...`
+- `[ros_gz_bridge]: Creating GZ->ROS Bridge: [/clock (gz.msgs.Clock) -> /clock (rosgraph_msgs/msg/Clock)]`; sem `both ros_type_name and gz_type_name must be set`.
+- `ros2 control list_controllers` → `joint_trajectory_controller ... active`; `joint_state_broadcaster ... active`.
+- `/aracne/leg/joint_angles`: `sensor_msgs/msg/JointState`; **Publisher count: 1**; Subscription count: 0.
+- `/joint_states`: `sensor_msgs/msg/JointState`; Publisher count: 1; Subscription count: 1; `leg1_coxa_joint`, `leg1_femur_joint`, `leg1_tibia_joint` (position/velocity).
+- TF `leg1_base_link → leg1_coxa_link → leg1_femur_link → leg1_tibia_link`: sem regressão (cadeia validada em lote anterior, não atribuída ao D).
+
 ## Observações
 
-- Lotes A, B, B.1 e C do Mark I concluídos e validados.
-- Problemas remanescentes (`mark1_params.yaml`, CRLF, bridge legado `joint_angles`, overlay, `GZ_SIM_SYSTEM_PLUGIN_PATH`, warnings KDL/update-period) **não** são marcados como resolvidos — registrados em `TECH_DEBT.md`.
-- A rastreabilidade do Lote A/B permanece válida.
+- Lotes A, B, B.1, C e D do Mark I concluídos e validados.
+- O Lote D resolveu: parse de `mark1_params.yaml` (D1), CRLF dos scripts Python (D2) e bridge legado `joint_angles` (D3).
+- Problemas remanescentes (overlay/`AMENT_PREFIX_PATH`, `GZ_SIM_SYSTEM_PLUGIN_PATH`, warnings KDL/update-period, pipeline ponta-a-ponta de movimento) **não** são marcados como resolvidos — registrados em `TECH_DEBT.md`.
+- A rastreabilidade dos Lotes A, B, B.1 e C permanece válida.
 
 
