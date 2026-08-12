@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<xacro:macro xmlns:xacro="http://www.ros.org/wiki/xacro" name="leg" params="leg_prefix leg_coxa_length leg_femur_length leg_tibia_length joint_limits_coxa_lower joint_limits_coxa_upper joint_limits_femur_lower joint_limits_femur_upper joint_limits_tibia_lower joint_limits_tibia_upper">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="leg" params="leg_prefix leg_coxa_length leg_femur_length leg_tibia_length joint_limits_coxa_lower joint_limits_coxa_upper joint_limits_femur_lower joint_limits_femur_upper joint_limits_tibia_lower joint_limits_tibia_upper">
   <xacro:property name="coxa_length" value="${leg_coxa_length}"/>
   <xacro:property name="femur_length" value="${leg_femur_length}"/>
   <xacro:property name="tibia_length" value="${leg_tibia_length}"/>
@@ -108,5 +109,6 @@
     <origin xyz="0 ${femur_length} 0" rpy="0 0 0"/>
     <axis xyz="0 1 0"/>
     <limit lower="${joint_limits_tibia_lower}" upper="${joint_limits_tibia_upper}" effort="10" velocity="1.0"/>
-  </joint>
+    </joint>
 </xacro:macro>
+</robot>
