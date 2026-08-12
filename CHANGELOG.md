@@ -2,9 +2,41 @@
 
 ## Unreleased
 
-### Fixed
+### Lote C — Spawn do Mark I no Gazebo Harmonic e controllers
 
-- `aracne_teleop`: removido `ament_python` e ajustado para `ament_cmake` com `install(PROGRAMS ...)`.
+#### Added
+
+- `mark1.launch.py`: `robot_state_publisher` mínimo (publica `robot_description` a partir da `Command` do xacro; `use_sim_time: true`).
+- `mark1.launch.py`: spawn do Mark I via `ros_gz_sim create` (`world=mark1_lab`, `name=mark1`, pose `(0,0,0.5,Y=0)`, lendo `/robot_description`).
+- `mark1.launch.py`: segundo spawner para `joint_state_broadcaster`.
+- `bridge_mark1.yaml`: bridge `/clock` (GZ_TO_ROS, `rosgraph_msgs/msg/Clock` ↔ `gz.msgs.Clock`).
+- `mark1.launch.py`: configuração do `parameter_bridge` via parâmetro `config_file` (em vez de passar o YAML como arquivo de parâmetros ROS2).
+
+#### Changed
+
+- `aracne.xacro`: a dependência reversa/oculta `$(find aracne_bringup)` foi removida; o caminho do arquivo de controllers agora chega por argumento `controllers_file` e é usado em `<parameters>$(arg controllers_file)</parameters>`.
+- `mark1.launch.py`: `controllers_path` resolve o YAML de controllers via `FindPackageShare` e injeta `controllers_file:=` no xacro.
+- `mark1.launch.py`: `executable` do spawner corrigido de `spawner.py` para `spawner`.
+- `mark1.launch.py`: ordem de inicialização por `TimerAction` (Gazebo → robot_state_publisher → spawn → bridge → JSB → JTC).
+- `mark1_lab.sdf`: `model://ground_plane` substituído por um ground plane SDF local.
+- `joint_trajectory_controller.yaml`: `action_monitor_rate` corrigido de `10` para `10.0` (double).
+
+#### Fixed
+
+- Marcador do controller manager: `executable 'spawner.py' not found` → resolvido com `spawner`.
+- `parameter_bridge` falhava ao carregar o YAML ("Sequences cannot be key") → corrigido via parâmetro `config_file`.
+
+#### Validado (runtime)
+
+- Mundo `mark1_lab` abre; Mark I spawnado ("Entity creation successful").
+- `gz_ros2_control` carrega `controller_manager`; hardware `aracne_leg1_controller` configurado e ativado; 3 juntas.
+- `joint_state_broadcaster` e `joint_trajectory_controller` ativos.
+- `/joint_states` publica `leg1_coxa_joint`, `leg1_femur_joint`, `leg1_tibia_joint`.
+- TF `leg1_base_link → leg1_coxa_link → leg1_femur_link → leg1_tibia_link`; `view_frames` ~20 Hz.
+- Build dos 3 pacotes (`aracne_description`, `aracne_simulation`, `aracne_bringup`) PASS; `py_compile` PASS.
+
+### Fixed (Lote B / B.1)
+
 - `aracne_leg_kinematics`: `ik_solver` convertido para biblioteca `STATIC` e vinculado corretamente ao nó e aos testes.
 - `IkResult`: inicialização segura com `success=false` e ângulos zerados; erro de serviço tratado sem expor ângulos inválidos.
 - `aracne_bringup`: removido o `ros2_control_node` (`controller_manager`) independente do `launch/mark1.launch.py` — o controller manager duplicado é eliminado e passa a ser fornecido pelo plugin `gz_ros2_control` do Gazebo.

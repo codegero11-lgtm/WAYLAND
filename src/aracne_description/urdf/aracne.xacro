@@ -12,6 +12,7 @@
   <xacro:arg name="joint_limits_femur_upper" default="1.57"/>
   <xacro:arg name="joint_limits_tibia_lower" default="-2.09"/>
   <xacro:arg name="joint_limits_tibia_upper" default="0.0"/>
+  <xacro:arg name="controllers_file" default=""/>
 
     <ros2_control name="aracne_leg1_controller" type="system">
     <hardware>
@@ -51,6 +52,8 @@
     <plugin
       filename="libgz_ros2_control-system.so"
       name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(arg controllers_file)</parameters>
     </plugin>
   </gazebo>
 </robot>
+

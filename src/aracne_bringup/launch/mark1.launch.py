@@ -19,6 +19,10 @@ def generate_launch_description():
         )
     )
 
+    controllers_path = PathJoinSubstitution(
+        [bringup_share, "config", "joint_trajectory_controller.yaml"]
+    )
+
     robot_description = Command(
         [
             "xacro ",
@@ -32,7 +36,40 @@ def generate_launch_description():
             " joint_limits_femur_upper:=1.57",
             " joint_limits_tibia_lower:=-2.09",
             " joint_limits_tibia_upper:=0.0",
+            " controllers_file:=",
+            controllers_path,
         ]
+    )
+
+    robot_state_publisher_node = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        name="robot_state_publisher",
+        output="screen",
+        parameters=[
+            {
+                "robot_description": robot_description,
+                "use_sim_time": True,
+            }
+        ],
+    )
+
+    spawn_mark1_node = Node(
+        package="ros_gz_sim",
+        executable="create",
+        name="spawn_mark1",
+        output="screen",
+        parameters=[
+            {
+                "world": "mark1_lab",
+                "name": "mark1",
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.5,
+                "Y": 0.0,
+                "topic": "/robot_description",
+            }
+        ],
     )
 
     bridge_node = Node(
@@ -41,9 +78,11 @@ def generate_launch_description():
         name="ros_gz_bridge",
         output="screen",
         parameters=[
-            PathJoinSubstitution(
-                [simulation_share, "config", "bridge_mark1.yaml"]
-            )
+            {
+                "config_file": PathJoinSubstitution(
+                    [simulation_share, "config", "bridge_mark1.yaml"]
+                )
+            }
         ],
     )
 
@@ -75,16 +114,27 @@ def generate_launch_description():
 
     spawner_node = Node(
         package="controller_manager",
-        executable="spawner.py",
+        executable="spawner",
         name="controller_spawner",
         output="screen",
         arguments=["joint_trajectory_controller"],
     )
 
+    spawner_jsb_node = Node(
+        package="controller_manager",
+        executable="spawner",
+        name="joint_state_broadcaster_spawner",
+        output="screen",
+        arguments=["joint_state_broadcaster"],
+    )
+
     return LaunchDescription(
         [
             gazebo_launch,
-            TimerAction(period=5.0, actions=[bridge_node]),
+            TimerAction(period=3.0, actions=[robot_state_publisher_node]),
+            TimerAction(period=5.0, actions=[spawn_mark1_node]),
+            TimerAction(period=6.0, actions=[bridge_node]),
+            TimerAction(period=7.0, actions=[spawner_jsb_node]),
             TimerAction(period=8.0, actions=[spawner_node]),
             TimerAction(
                 period=9.0,
@@ -92,3 +142,4 @@ def generate_launch_description():
             ),
         ]
     )
+

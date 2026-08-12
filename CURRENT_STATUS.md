@@ -1,15 +1,15 @@
 # WAYLAND — Current Status
 
-> Este arquivo representa o estado validado do Mark I após a conclusão do Lote B e do Lote B.1 (fechamento URDF/ros2_control).
+> Este arquivo representa o estado validado do Mark I após a conclusão do Lote C (spawn + controllers no Gazebo Harmonic).
 
 ## Identificação
 
 - Projeto: WAYLAND
 - Mark atual: Mark I
-- Lote atual: Lote B.1 (concluído) — aguardando Lote C
-- Último lote concluído: Lote B / Lote B.1
-- Marco atual: M1 — Build e testes unitários estáveis
-- Última atualização: 2026-08-06
+- Lote atual: Lote C (concluído) — aguardando próximo lote
+- Último lote concluído: Lote C
+- Marco atual: M2 — Spawn do Mark I no Gazebo + broadcasters/controllers ativos
+- Última atualização: 2026-08-12
 
 ## Ambiente
 
@@ -18,28 +18,30 @@
 | WSL2 | OK | `wsl.exe` disponível e ambiente acessível |
 | ROS2 Jazzy | OK | Build/test usando `/opt/ros/jazzy/setup.bash` |
 | colcon | OK | `colcon build --symlink-install` |
-| Gazebo (runtime) | Não validado | Integração estrutural confirmada; rodagem não iniciada (bloqueante do Lote C) |
-| ros2_control | Confirmado (estrutura) | Controller manager único; hardware plugin `gz_ros2_control/GazeboSimSystem` compatível com Jazzy/Harmonic |
+| Gazebo Harmonic (runtime) | OK (validado) | Mundo `mark1_lab` abre; Mark I spawnado via `ros_gz_sim create`; `controller_manager` do `gz_ros2_control` operacional |
+| ros2_control | OK (runtime) | `joint_state_broadcaster` e `joint_trajectory_controller` ativos; hardware `aracne_leg1_controller` ativado; 3 juntas |
 ## Estado do software
 
 | Área | Status | Observação |
 |---|---|---|
-| Build de pacotes básicos | OK | `aracne_msgs`, `aracne_leg_kinematics`, `aracne_teleop` compilam |
-| Testes unitários | OK | `aracne_leg_kinematics`, `aracne_teleop` passam |
-| `aracne_teleop` | OK | utiliza `ament_cmake` e `install(PROGRAMS ...)` |
-| `ik_solver` | OK | biblioteca estática ligada ao nó e testes |
-| `IkResult` | OK | inicialização segura e fluxo de erro tratado |
-| URDF/Xacro | CONCLUÍDO (B.1) | `xacro` processa (PASS); `check_urdf` PASS; 3 juntas; `ros2_control` único; estrutura corrigida (macro em `<robot>`, `$(arg ...)`) |
-| Controller manager | OK (único) | `ros2_control_node` independente removido; único controller manager fornecido pelo `gz_ros2_control` do Gazebo |
-| Integração gz_ros2_control | OK (Jazzy/Harmonic) | `libgz_ros2_control-system.so` + `gz_ros2_control::GazeboSimROS2ControlPlugin`; hardware `gz_ros2_control/GazeboSimSystem` |
-| Build Lote B | OK | `aracne_simulation`, `aracne_description`, `aracne_bringup` compilam |
-
+| Build de pacotes (Lote C) | OK | `aracne_description`, `aracne_simulation`, `aracne_bringup` compilam |
+| `py_compile` launch | OK | `mark1.launch.py` compila |
+| Mundo `mark1_lab` | OK (local) | ground plane local substituiu `model://ground_plane` |
+| Spawn do Mark I | OK | `ros_gz_sim create` com `world=mark1_lab`, `name=mark1`, via `/robot_description` |
+| `robot_state_publisher` | OK | publica `robot_description` (Command do xacro) + TF |
+| Bridge `/clock` | OK | `parameter_bridge` criou `/clock` (GZ→ROS); `controller_manager` parou de emitir "No clock received" |
+| `joint_state_broadcaster` | OK (active) | 2º spawner (t=7.0s); publicado `/joint_states` com 3 juntas |
+| `joint_trajectory_controller` | OK (active) | `action_monitor_rate: 10.0`; load/config/activate confirmados |
+| TF | OK | `leg1_base_link → leg1_coxa_link → leg1_femur_link → leg1_tibia_link`; `view_frames` ~20 Hz |
 ## Bloqueadores atuais
 
-- Gazebo runtime e controllers ainda não validados (pertencem ao Lote C; dependem de spawn e configuração de controllers, fora do escopo do Lote B.1).
-- O repositório contém modificações pré-existentes fora do escopo do Lote A e não foram alteradas.
-
+- `mark1_params.yaml`: `leg_kinematics_node` falha no parse (`Cannot have a value before ros__parameters`) — dívida técnica para lote seguinte.
+- CRLF nos scripts `teleop_node.py` e `teleop_bridge.py` (`/usr/bin/env: 'python3\r'`) — dívida técnica.
+- Bridge legado `/aracne/leg/joint_angles` (`ros_type_name`/`gz_type_name` incompleto) — não tratado deliberadamente.
+- Overlay/`AMENT_PREFIX_PATH` exigindo source explícito de `local_setup.bash` — problema de ambiente documentado.
+- `GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ros/jazzy/lib` necessário para `libgz_ros2_control-system.so`.
+- Warning KDL (root link com inertia) e warning de controller update period (0.01 s) vs sim (0.001 s) — não bloqueiam.
 ## Próximo objetivo
 
-- Lote C: spawn do Mark I no Gazebo Harmonic, `robot_state_publisher`, broadcasters e configuração de controllers (YAML/spawner). Não iniciado — aguarda aprovação.
+- Próximo lote: resolver as dívidas remanescentes (mark1_params.yaml, CRLF, bridge legado, overlay) e, em seguida, pipeline de comando de junta (joint_states→IK→teleop) — recomendado após aprovação.
 

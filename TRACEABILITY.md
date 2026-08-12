@@ -55,10 +55,42 @@ Summary: 3 packages finished [4.20s]
 - `aracne_simulation`, `aracne_description`, `aracne_bringup` compilam.
 - Nenhum warning relevante.
 
+## Status do Lote C (concluído)
+
+| ID | Requisito | Documento de origem | Pacote | Arquivo principal | Teste | Evidência | Status | Lote |
+|---|---|---|---|---|---|---|---|---|
+| R-M1-C01 | Eliminada dependência reversa `aracne_description → aracne_bringup` no URDF | LOTES/LOTE_C.md | `aracne_description`, `aracne_bringup` | `urdf/aracne.xacro`, `launch/mark1.launch.py` | `xacro` + `check_urdf` | `$(find aracne_bringup)` removido; `controllers_file` por argumento; `check_urdf` PASS | VALIDADO | C |
+| R-M1-C02 | Mundo `mark1_lab` abre sem dependência externa | LOTES/LOTE_C.md | `aracne_simulation` | `worlds/mark1_lab.sdf` | runtime | ground plane local substituiu `model://ground_plane`; mundo abre | VALIDADO | C |
+| R-M1-C03 | Mark I spawnado no Gazebo | LOTES/LOTE_C.md | `aracne_bringup` | `launch/mark1.launch.py` | runtime | `ros_gz_sim create` → "Entity creation successful"; modelo `mark1` visível | VALIDADO | C |
+| R-M1-C04 | Bridge `/clock` GZ→ROS | LOTES/LOTE_C.md | `aracne_simulation` | `config/bridge_mark1.yaml` | runtime | `parameter_bridge` criou `/clock (gz.msgs.Clock) → /clock (rosgraph_msgs/msg/Clock)`; fim do "No clock received" | VALIDADO | C |
+| R-M1-C05 | `joint_state_broadcaster` active | LOTES/LOTE_C.md | `aracne_bringup` | `launch/mark1.launch.py` | runtime | `ros2 control list_controllers` → `joint_state_broadcaster ... active` | VALIDADO | C |
+| R-M1-C06 | `joint_trajectory_controller` active | LOTES/LOTE_C.md | `aracne_bringup` | `config/joint_trajectory_controller.yaml` | runtime | `action_monitor_rate: 10.0`; load/config/activate; `list_controllers` → active | VALIDADO | C |
+| R-M1-C07 | `/joint_states` com as 3 juntas | LOTES/LOTE_C.md | `aracne_bringup` | `launch/mark1.launch.py` | runtime | `ros2 topic echo /joint_states --once` → `leg1_coxa_joint`, `leg1_femur_joint`, `leg1_tibia_joint` (position/velocity) | VALIDADO | C |
+| R-M1-C08 | TF da perna | LOTES/LOTE_C.md | `aracne_bringup` | `launch/mark1.launch.py` | runtime | `/tf` → `leg1_base_link → leg1_coxa_link → leg1_femur_link → leg1_tibia_link`; `view_frames` ~20 Hz | VALIDADO | C |
+
+### Evidências — Lote C
+
+**Build de fechamento:**
+```
+source /opt/ros/jazzy/setup.bash
+colcon build --symlink-install \
+  --packages-select aracne_description aracne_simulation aracne_bringup
+Summary: 3 packages finished ...
+```
+`py_compile src/aracne_bringup/launch/mark1.launch.py` → PASS.
+
+**Evidências de runtime (fornecidas pelo usuário):**
+- `ros_gz_sim create` → "Entity creation successful".
+- `Loading controller_manager`; `Successful initialization of hardware 'aracne_leg1_controller'`; `System Successfully configured!`; `Successful 'activate' of hardware ...`; `Resource Manager has been successfully initialized.`
+- `Loaded joint_trajectory_controller`; `Configured and activated joint_trajectory_controller`; `Successfully switched controllers!`
+- `ros2 control list_controllers` → `joint_trajectory_controller ... active`; `joint_state_broadcaster ... active`.
+- `/joint_states` → 3 juntas (position/velocity).
+- `/tf` e `view_frames` → cadeia base→coxa→femur→tibia (~20.312 Hz).
+
 ## Observações
 
-- O Lote B e o Lote B.1 (fechamento URDF/ros2_control) estão concluídos e validados.
-- Requisitos do Lote C (spawn, `robot_state_publisher`, broadcasters, controllers/YAML/spawner) **não** estão marcados como validados — pendentes.
-- A rastreabilidade do Lote A permanece válida.
+- Lotes A, B, B.1 e C do Mark I concluídos e validados.
+- Problemas remanescentes (`mark1_params.yaml`, CRLF, bridge legado `joint_angles`, overlay, `GZ_SIM_SYSTEM_PLUGIN_PATH`, warnings KDL/update-period) **não** são marcados como resolvidos — registrados em `TECH_DEBT.md`.
+- A rastreabilidade do Lote A/B permanece válida.
 
 

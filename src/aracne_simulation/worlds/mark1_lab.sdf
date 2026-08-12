@@ -1,9 +1,27 @@
 <?xml version="1.0" ?>
 <sdf version="1.9">
   <world name="mark1_lab">
-    <include>
-      <uri>model://ground_plane</uri>
-    </include>
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>10 10</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>10 10</size>
+            </plane>
+          </geometry>
+        </visual>
+      </link>
+    </model>
     <physics name="default_physics" type="ode">
       <real_time_update_rate>1000</real_time_update_rate>
       <max_step_size>0.001</max_step_size>
@@ -38,3 +56,4 @@
     </model>
   </world>
 </sdf>
+

@@ -1,0 +1,9 @@
+digraph G {
+"leg1_base_link" -> "leg1_coxa_link"[label=" Broadcaster: default_authority\nAverage rate: 20.312\nBuffer length: 1.28\nMost recent transform: 145.24\nOldest transform: 143.96\n"];
+"leg1_coxa_link" -> "leg1_femur_link"[label=" Broadcaster: default_authority\nAverage rate: 20.312\nBuffer length: 1.28\nMost recent transform: 145.24\nOldest transform: 143.96\n"];
+"leg1_femur_link" -> "leg1_tibia_link"[label=" Broadcaster: default_authority\nAverage rate: 20.312\nBuffer length: 1.28\nMost recent transform: 145.24\nOldest transform: 143.96\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1786563447.8094106"[ shape=plaintext ] ;
+}->"leg1_base_link";
+}
