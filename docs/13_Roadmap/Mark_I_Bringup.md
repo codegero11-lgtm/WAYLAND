@@ -91,6 +91,15 @@ O Mark I só é considerado pronto quando **todos** os itens abaixo são verdade
 - [ ] Nenhum pacote viola a matriz de dependências de `01b §5` (revisão manual de imports)
 - [ ] Documentação de `01b` atualizada se qualquer tópico/mensagem mudou durante a implementação (regra do processo de mudança de contrato)
 
+### Estado do Lote E / E3 — controlled motion pipeline (concluído)
+
+- Controlled motion pipeline validado: `LegTarget → leg_kinematics_node → /aracne/leg/joint_angles → joint_trajectory_bridge → FollowJointTrajectory → joint_trajectory_controller → gz_ros2_control → /joint_states`.
+- `joint_trajectory_bridge`: `enabled` default `False` (SAFE OFF) no script e no launch; validações de nomes, posições, finitude e limites (REJECT, nunca clamp); one-active-goal; envio assíncrono + resultado.
+- Runtime **ARM/DISARM** via `ros2 param set /joint_trajectory_bridge enabled true|false` (on-set valida, post-set sincroniza; log `command bridge ARMED`/`DISARMED`).
+- **ARM ≠ command**: ARM sozinho não envia goal; somente um novo `JointState` recebido após o ARM gera goal.
+- Primeiro movimento controlado validado: target `(0.15, 0.00, -0.08, leg1)` → IK `[0.0000, 0.3281, -1.7639]` → goal ACCEPTED → SUCCEEDED → feedback `/joint_states` `[0, 0.32807, -1.76391]`; controllers permaneceram active; DISARM confirmado.
+- **Próxima etapa: E4** (não iniciada) — evolução/segurança do pipeline (ex.: múltiplos targets sequenciais, política de estada parado/home, e enforcement de command limits no controller manager).
+
 ## 8. Procedimento de Troubleshooting (erros esperados)
 
 | Sintoma | Causa provável | Ação |

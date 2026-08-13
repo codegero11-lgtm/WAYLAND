@@ -12,6 +12,7 @@ install(DIRECTORY launch config
 
 install(PROGRAMS
   scripts/teleop_bridge.py
+  scripts/joint_trajectory_bridge.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

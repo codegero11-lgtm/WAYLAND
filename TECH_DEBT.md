@@ -20,7 +20,7 @@ Toda dívida deve ter:
 | TD-007 | `robot_state_publisher` warning: KDL não suporta root link com inertia (`leg1_base_link`). Não bloqueia TF. | Warning cosmético | Baixa | Adiar | Aberta |
 | TD-008 | Controller update period (0.01 s) mais lento que o Gazebo sim period (0.001 s). Não alterado (decisão de escopo). | Transientes de controle; não bloqueante | Baixa | Adiar | Aberta |
 | TD-009 | `/joint_states` publica `effort` como `.nan` (interfaces atuais: state position/velocity, command position). Coerente com configuração; sem camada de esforço. | Não bloqueante; documentado | Baixa | Fora do escopo | Aberta |
-| TD-010 | Pipeline ponta-a-ponta de movimento **não comprovado**: `target/IK → joint_angles → JointTrajectoryController → movimento → feedback em /joint_states`. Não implementado; pertence ao Lote E. | Movimento da perna não validado | Alta | Próximo lote (Lote E) | Aberta |
+| TD-011 | `controller_manager`: "Enforcing command limits is disabled. Command limits from URDF will be ignored." O controller manager não está aplicando os command limits do URDF; hoje as validações de limites são feitas pelo `joint_trajectory_bridge` (REJECT) e pela IK. | Sem camada de enforce de limites no controller; risco antes da evolução para hardware | Média | Antes de evolução para hardware | Aberta |
 ## Dívidas encerradas
 
 | ID | Descrição | Resolvido em | Status |
@@ -32,14 +32,16 @@ Toda dívida deve ter:
 | TD-002 | `mark1_params.yaml` fora do formato ROS2 (`Cannot have a value before ros__parameters`) — estruturado em `leg_kinematics_node: ros__parameters:` | Lote D | Encerrada |
 | TD-003 | CRLF nos scripts `teleop_node.py` e `teleop_bridge.py` (`python3\r`) — normalizado CRLF→LF | Lote D | Encerrada |
 | TD-004 | Bridge legado `/aracne/leg/joint_angles` (falta `gz_type_name`; redundante; referência desatualizada) — entrada removida; `/clock` preservado | Lote D | Encerrada |
+| TD-010 | Pipeline ponta-a-ponta de movimento **não comprovado** — validado no Lote E (E3): target → IK → joint angles → FollowJointTrajectory → goal ACCEPTED/SUCCEEDED → feedback coerente em `/joint_states` | Lote E | Encerrada |
 
 ## Observações
 
 - A TD-001 foi encerrada: o núcleo de simulação do Mark I foi validado em runtime no Lote C (mundo abre, Mark I spawnado, `joint_state_broadcaster`/`joint_trajectory_controller` ativos, `/joint_states` e TF OK).
 - As dívidas TD-002, TD-003 e TD-004 foram encerradas no Lote D (saneamento de parâmetros, CRLF e bridge legado). `/clock` e controllers permanecem ativos após o Lote D.
-- As dívidas TD-005, TD-006, TD-007, TD-008 e TD-009 **não** foram resolvidas por este fechamento — permanecem **Abertas**.
-- A TD-010 (pipeline ponta-a-ponta de movimento) **não** foi validada — pertence ao Lote E. **Não implementar agora.**
-- Nenhum warning (ex.: KDL) foi resolvido apenas por ter aparecido no runtime — no fechamento documental não se corrigem warnings.
+- As dívidas TD-005, TD-006, TD-007, TD-008, TD-009 e TD-011 **não** foram resolvidas por este fechamento — permanecem **Abertas**.
+- A TD-010 (pipeline ponta-a-ponta de movimento) foi **validada e encerrada** no Lote E (E3).
+- A TD-011 registra o warning do `controller_manager` ("Enforcing command limits is disabled/ignored"); não corrigido nesta etapa — a ser investigado antes da evolução para hardware.
+- Nenhum warning (ex.: KDL, update period) foi resolvido apenas por ter aparecido no runtime — no fechamento documental não se corrigem warnings.
 - Nenhuma dívida técnica foi registrada por causa de whitespace/formatação.
 - Nenhuma dependência nova foi introduzida.
 

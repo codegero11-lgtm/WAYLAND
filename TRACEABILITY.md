@@ -122,6 +122,37 @@ colcon build --symlink-install --packages-select aracne_simulation aracne_bringu
 - `/joint_states`: `sensor_msgs/msg/JointState`; Publisher count: 1; Subscription count: 1; `leg1_coxa_joint`, `leg1_femur_joint`, `leg1_tibia_joint` (position/velocity).
 - TF `leg1_base_link → leg1_coxa_link → leg1_femur_link → leg1_tibia_link`: sem regressão (cadeia validada em lote anterior, não atribuída ao D).
 
+## Status do Lote E (concluído)
+
+| ID | Requisito | Documento de origem | Pacote | Arquivo principal | Teste | Evidência | Status | Lote |
+|---|---|---|---|---|---|---|---|---|
+| R-M1-E01 | Bridge de objetivo de trajetória com `enabled` default `False` (SAFE OFF) | LOTES/LOTE_E.md | `aracne_bringup` | `scripts/joint_trajectory_bridge.py` | estático + py_compile + build + runtime | `declare_parameter("enabled", False)`; em SAFE MODE não envia goal; launch `"enabled": False` | VALIDADO | E |
+| R-M1-E02 | Validações de segurança no bridge: nomes, posições, finitude e limites; política `REJECT` sem `clamp` | LOTES/LOTE_E.md | `aracne_bringup` | `scripts/joint_trajectory_bridge.py` | estático + runtime | `_validate_and_reorder`: dup/unknown/missing, `math.isfinite`, `JOINT_LIMITS`; target fora de limite → REJECTED (goal NOT sent) | VALIDADO | E |
+| R-M1-E03 | One-active-goal-at-a-time | LOTES/LOTE_E.md | `aracne_bringup` | `scripts/joint_trajectory_bridge.py` | estático + runtime | `_goal_in_flight` marcado antes de `send_goal_async`; liberado nos callbacks de resposta/resultado | VALIDADO | E |
+| R-M1-E04 | Runtime ARM/DISARM via parâmetro: on-set valida, post-set sincroniza; ARM não chama `_send_goal` e não reutiliza target anterior | LOTES/LOTE_E.md | `aracne_bringup` | `scripts/joint_trajectory_bridge.py` | runtime manual | `ros2 param set ... enabled true` → `Set parameter successful` + `command bridge ARMED`; ARM sozinho **não** gerou movimento; `set false` → `command bridge DISARMED` | VALIDADO | E |
+| R-M1-E05 | Teleop sem publicação automática | LOTES/LOTE_E.md | `aracne_teleop` | `scripts/teleop_node.py` | estático | `create_timer` removido; `publish_command` sem chamador automático; `teleop_bridge` apenas reencaminha `/aracne/teleop/cmd` → `/aracne/leg/target_pose` | VALIDADO | E |
+| R-M1-E06 | Primeiro movimento ponta-a-ponta controlado: target cartesiano → IK → joint angles → FollowJointTrajectory → goal ACCEPTED → SUCCEEDED → feedback físico/simulado coerente | LOTES/LOTE_E.md | `aracne_bringup` | `launch/mark1.launch.py` | runtime manual | target `(0.15, 0.00, -0.08, leg1)` → `sending goal [0.0000, 0.3281, -1.7639]` → `goal ACCEPTED` → `goal SUCCEEDED`; feedback `/joint_states` `[0, 0.32807, -1.76391]`; velocidades ~0 | VALIDADO | E |
+
+### Evidências — Lote E
+
+**Validação estática:**
+```
+python3 -m py_compile src/aracne_bringup/scripts/joint_trajectory_bridge.py   # PASS
+python3 -m py_compile src/aracne_teleop/scripts/teleop_node.py \
+  src/aracne_bringup/scripts/teleop_bridge.py                                  # PASS
+source /opt/ros/jazzy/setup.bash
+colcon build --symlink-install --packages-select aracne_teleop aracne_bringup # PASS
+```
+
+**Validação (runtime, fornecida pelo operador):**
+- Boot com `joint_trajectory_bridge` em `enabled=False`; `ros2 param get /joint_trajectory_bridge enabled` → `False`.
+- `ros2 param set /joint_trajectory_bridge enabled true` → `Set parameter successful`; `ros2 param get` → `True`; Terminal 1: `command bridge ARMED`. **Nenhum** movimento apenas por ARM.
+- `ros2 topic pub --once /aracne/leg/target_pose aracne_msgs/msg/LegTarget "{x: 0.15, y: 0.00, z: -0.08, leg_id: leg1}"`.
+- Pipeline: `sending FollowJointTrajectory goal: target positions [0.0000, 0.3281, -1.7639] duration=2.00s`; controller: `Received new action goal` / `Accepted new action goal`; bridge: `goal ACCEPTED by action server; waiting for result`; depois `Goal reached, success!` e `goal SUCCEEDED`.
+- `/joint_states` pós-movimento: `leg1_coxa_joint ≈ -3.27e-19`, `leg1_femur_joint ≈ 0.328073`, `leg1_tibia_joint ≈ -1.763913`; velocidades ~0.
+- Controllers `joint_trajectory_controller` e `joint_state_broadcaster` permanecem **active**.
+- `ros2 param set /joint_trajectory_bridge enabled false` → `Set parameter successful`; `ros2 param get` → `False`; Terminal 1: `command bridge DISARMED`.
+
 ## Observações
 
 - Lotes A, B, B.1, C e D do Mark I concluídos e validados.

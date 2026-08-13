@@ -7,7 +7,9 @@ class TeleopNode(Node):
     def __init__(self):
         super().__init__('teleop_node')
         self.publisher_ = self.create_publisher(TeleopCmd, '/aracne/teleop/cmd', 10)
-        self.timer = self.create_timer(1.0, self.publish_command)
+        # NOTE: no periodic timer here. The teleop must NOT drive autonomously;
+        # it stays idle (does not publish) until a real operator-intent source
+        # is integrated. publish_command() remains the single emission path.
         self.declare_parameter('delta_x', 0.0)
         self.declare_parameter('delta_y', 0.0)
         self.declare_parameter('delta_z', 0.0)

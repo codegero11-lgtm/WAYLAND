@@ -1,14 +1,14 @@
 # WAYLAND — Current Status
 
-> Este arquivo representa o estado validado do Mark I após a conclusão do Lote D (saneamento de parâmetros, CRLF e bridge legado).
+> Este arquivo representa o estado validado do Mark I após a conclusão do Lote E (controlled motion pipeline / E3).
 
 ## Identificação
 
 - Projeto: WAYLAND
 - Mark atual: Mark I
-- Lote atual: Lote D (concluído) — aguardando próximo lote
-- Último lote concluído: Lote D
-- Marco atual: M3 — Mark I com saneamento de startup concluído (parâmetros, CRLF, bridge legado)
+- Lote atual: Lote E (concluído) — aguardando E4
+- Último lote concluído: Lote E
+- Marco atual: M4 — Mark I com pipeline de movimento controlado validado (SAFE OFF + ARM/DISARM runtime + primeiro movimento ponta-a-ponta)
 - Última atualização: 2026-08-12
 
 ## Ambiente
@@ -35,19 +35,22 @@
 | TF | OK | `leg1_base_link → leg1_coxa_link → leg1_femur_link → leg1_tibia_link`; `view_frames` ~20 Hz; sem regressão após Lote D |
 | `leg_kinematics_node` | OK (runtime) | inicia após saneamento de `mark1_params.yaml` (D1); falha de parse eliminada |
 | `teleop_node.py` | OK (runtime) | inicia após normalização CRLF (D2) |
-| `teleop_bridge.py` | OK (runtime) | inicia após normalização CRLF (D2) |
+| `teleop_bridge.py` | OK (runtime) | inicia após normalização CRLF (D2); apenas reencaminha `/aracne/teleop/cmd` → `/aracne/leg/target_pose` |
+| `joint_trajectory_bridge.py` | OK (runtime) | novo no Lote E; `enabled` default `False` (SAFE OFF); valida nomes/posições/finitude/limites (REJECT); one-active-goal; envio assíncrono + resultado |
+| ARM/DISARM runtime | OK (runtime) | `ros2 param set /joint_trajectory_bridge enabled true/false`; log `command bridge ARMED`/`DISARMED`; ARM ≠ command; boot sempre DISARMED |
+| Pipeline de movimento controlado | OK (validado) | Lote E: target `(0.15,0,-0.08)` → IK `[0, 0.3281, -1.7639]` → goal ACCEPTED → SUCCEEDED → feedback `[0, 0.32807, -1.76391]` |
 | `/aracne/leg/joint_angles` | OK | `sensor_msgs/msg/JointState`; Publisher count: 1 (leg_kinematics_node); Subscription count: 0 |
 | Erro CRLF (`python3\r`) | Eliminado | scripts de teleop em LF; startup limpo |
 | Erro parsing bridge legado | Eliminado | entrada `joint_angles` removida em `bridge_mark1.yaml`; `parameter_bridge` sem "both ros_type_name and gz_type_name must be set"; `/clock` preservado |
 
 ## Bloqueadores atuais
 
-- Elo ponta-a-ponta **AINDA NÃO validado**: `IK → comando aceito pelo JointTrajectoryController → movimento físico/simulado da perna → feedback coerente em /joint_states`. Pertence ao próximo estágio (Lote E).
 - Overlay/`AMENT_PREFIX_PATH` exigindo source explícito de `local_setup.bash` — problema de ambiente documentado.
 - `GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ros/jazzy/lib` necessário para `libgz_ros2_control-system.so`.
 - Warning KDL (root link com inertia) e warning de controller update period (0.01 s) vs sim (0.001 s) — não bloqueiam.
+- Warning `controller_manager`: "Enforcing command limits is disabled; command limits from URDF will be ignored" — registrado como dívida técnica (TD) para investigar antes da evolução para hardware; o bridge mantém validação própria de limites.
 
 ## Próximo objetivo
 
-- Próximo lote (Lote E): fechamento do primeiro pipeline de movimento da Mark I — `target_pose/IK → joint targets → JointTrajectoryController → gz_ros2_control → juntas no Gazebo → /joint_states`. O nome e a decomposição definitivos podem ser definidos após análise estática. Não implementado ainda.
+- Próxima etapa: **E4** — evolução do pipeline de movimento controlado (ex.: múltiplos targets únicos sequenciais, política de retorno/estado parado, e análise de limites no controller manager). **Não implementado ainda; não definido como concluído.**
 

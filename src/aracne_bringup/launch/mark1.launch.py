@@ -112,6 +112,22 @@ def generate_launch_description():
         output="screen",
     )
 
+    joint_trajectory_bridge_node = Node(
+        package="aracne_bringup",
+        executable="joint_trajectory_bridge.py",
+        name="joint_trajectory_bridge",
+        output="screen",
+        parameters=[
+            {
+                "enabled": False,
+                "trajectory_duration": 2.0,
+                "controller_action": (
+                    "/joint_trajectory_controller/follow_joint_trajectory"
+                ),
+            }
+        ],
+    )
+
     spawner_node = Node(
         package="controller_manager",
         executable="spawner",
@@ -138,7 +154,12 @@ def generate_launch_description():
             TimerAction(period=8.0, actions=[spawner_node]),
             TimerAction(
                 period=9.0,
-                actions=[leg_node, teleop_node, teleop_bridge_node],
+                actions=[
+                    leg_node,
+                    teleop_node,
+                    teleop_bridge_node,
+                    joint_trajectory_bridge_node,
+                ],
             ),
         ]
     )

@@ -2,6 +2,39 @@
 
 ## Unreleased
 
+### Lote E / E3 — Controlled motion pipeline (Mark I)
+
+#### Added
+
+- `aracne_bringup/scripts/joint_trajectory_bridge.py` (novo): adapter entre a saída de IK (`/aracne/leg/joint_angles`, `sensor_msgs/msg/JointState`) e o `FollowJointTrajectory` do `joint_trajectory_controller`.
+- `joint_trajectory_bridge`: `enabled` com default `False` (SAFE OFF) — enquanto desabilitado apenas valida e loga, nunca envia action goal.
+- `joint_trajectory_bridge`: validações de nomes, posições, finitude (NaN/Inf) e limites articulares.
+- `joint_trajectory_bridge`: política `REJECT` (nunca `clamp`) para targets fora dos limites.
+- `joint_trajectory_bridge`: one-active-goal-at-a-time (sem fila/engueue/preemption).
+- `joint_trajectory_bridge`: envio assíncrono (`send_goal_async`) e tratamento do resultado (ACCEPTED/REJECTED/SUCCEEDED/ABORTED/CANCELED).
+- `joint_trajectory_bridge`: ARM/DISARM em runtime via `ros2 param set` (`add_on_set_parameters_callback` valida somente; `add_post_set_parameters_callback` sincroniza `self._enabled` e loga `command bridge ARMED`/`DISARMED`).
+- `joint_trajectory_bridge`: garantia `ARM != command` — ARM por si só não envia goal nem reutiliza target; somente um novo `JointState` recebido após o ARM produz goal.
+- `mark1.launch.py`: instância do `joint_trajectory_bridge` em `period=9.0` com `enabled=False`, `trajectory_duration=2.0` e `controller_action=/joint_trajectory_controller/follow_joint_trajectory`.
+- Dependência direta `rcl_interfaces` (exec_depend).
+
+#### Changed
+
+- `aracne_teleop/scripts/teleop_node.py`: removida a publicação automática via `create_timer(1.0, self.publish_command)` — o teleop permanece inerte até uma fonte real de intenção do operador.
+- `aracne_bringup/CMakeLists.txt`: instala `scripts/joint_trajectory_bridge.py`.
+
+#### Validation
+
+- Boot com `joint_trajectory_bridge` DISARMED (`enabled=False`); `ros2 param get ... enabled` → `False`.
+- ARM em runtime (`ros2 param set ... enabled true`) → `command bridge ARMED`; **nenhum** movimento apenas por ARM.
+- Target cartesiano único: `x=0.15, y=0.00, z=-0.08, leg_id=leg1`.
+- IK resultante aproximadamente `[0.0000, 0.3281, -1.7639]`.
+- `sending FollowJointTrajectory goal ... [0.0000, 0.3281, -1.7639]` → `goal ACCEPTED` → `goal SUCCEEDED`.
+- Feedback final em `/joint_states` aproximadamente `[0, 0.32807, -1.76391]`; velocidades ~0.
+- Controllers permaneceram `active` durante o teste; DISARM confirmado (`enabled=False`).
+- `py_compile`: PASS; `colcon build --packages-select aracne_teleop aracne_bringup`: PASS.
+
+
+
 ### Lote C — Spawn do Mark I no Gazebo Harmonic e controllers
 
 #### Added
