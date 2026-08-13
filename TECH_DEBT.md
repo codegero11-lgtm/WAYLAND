@@ -21,6 +21,7 @@ Toda dívida deve ter:
 | TD-008 | Controller update period (0.01 s) mais lento que o Gazebo sim period (0.001 s). Não alterado (decisão de escopo). | Transientes de controle; não bloqueante | Baixa | Adiar | Aberta |
 | TD-009 | `/joint_states` publica `effort` como `.nan` (interfaces atuais: state position/velocity, command position). Coerente com configuração; sem camada de esforço. | Não bloqueante; documentado | Baixa | Fora do escopo | Aberta |
 | TD-011 | `controller_manager`: "Enforcing command limits is disabled. Command limits from URDF will be ignored." O controller manager não está aplicando os command limits do URDF; hoje as validações de limites são feitas pelo `joint_trajectory_bridge` (REJECT) e pela IK. | Sem camada de enforce de limites no controller; risco antes da evolução para hardware | Média | Antes de evolução para hardware | Aberta |
+| TD-012 | E4.5 risk acceptance: `goal timeout / stuck goal` e `DISARM != E-STOP` permanecem documentados como riscos aceitos para Mark I em simulação, não como falhas resolvidas. Requer recovery/timeout robusto e E-STOP real antes de hardware. | Segurança e recuperação do ciclo de comando não estão fechados para operação física; mitigação atual é simulação-adequada | Média | Antes de hardware real | Aberta |
 ## Dívidas encerradas
 
 | ID | Descrição | Resolvido em | Status |

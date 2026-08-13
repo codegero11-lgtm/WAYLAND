@@ -98,7 +98,8 @@ O Mark I só é considerado pronto quando **todos** os itens abaixo são verdade
 - Runtime **ARM/DISARM** via `ros2 param set /joint_trajectory_bridge enabled true|false` (on-set valida, post-set sincroniza; log `command bridge ARMED`/`DISARMED`).
 - **ARM ≠ command**: ARM sozinho não envia goal; somente um novo `JointState` recebido após o ARM gera goal.
 - Primeiro movimento controlado validado: target `(0.15, 0.00, -0.08, leg1)` → IK `[0.0000, 0.3281, -1.7639]` → goal ACCEPTED → SUCCEEDED → feedback `/joint_states` `[0, 0.32807, -1.76391]`; controllers permaneceram active; DISARM confirmado.
-- **Próxima etapa: E4** (não iniciada) — evolução/segurança do pipeline (ex.: múltiplos targets sequenciais, política de estada parado/home, e enforcement de command limits no controller manager).
+- **E4.5**: timeout/stuck goal, DISARM != E-STOP, command limits disabled e gaps de observabilidade continuam `ACCEPTED / DEFERRED` para Mark I em simulação; **não** marcados como resolvidos. TD-011 permanece aberta.
+- **Próxima etapa: E4** (não iniciada) — evolução/segurança do pipeline (ex.: múltiplos targets sequenciais, política de estada parado/home, e enforcement de command limits no controller manager) permanece deferida para hardware e fases futuras.
 
 ## 8. Procedimento de Troubleshooting (erros esperados)
 

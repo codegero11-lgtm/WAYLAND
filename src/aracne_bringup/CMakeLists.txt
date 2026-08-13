@@ -16,5 +16,13 @@ install(PROGRAMS
   DESTINATION lib/${PROJECT_NAME}
 )
 
+if(BUILD_TESTING)
+  find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test(e4_1_safety_state_machine test/test_e4_1_safety_state_machine.py)
+  ament_add_pytest_test(e4_2_sequential_targets test/test_e4_2_sequential_targets.py)
+  ament_add_pytest_test(e4_3_nominal_posture test/test_e4_3_nominal_posture.py)
+  ament_add_pytest_test(e4_4_observability test/test_e4_4_observability.py)
+endif()
+
 ament_package()
 
