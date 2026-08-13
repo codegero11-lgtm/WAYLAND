@@ -54,7 +54,8 @@ Estado atual: apenas os módulos do **Mark I** têm interface definida. As linha
 | Navegação (Nav2) | `/aracne/nav/*` — provavelmente reaproveitando tópicos padrão do Nav2 (`/cmd_vel`, `/map`, etc.) em vez de reinventar | Mark futuro |
 | Comandos de voz | `/aracne/voice/*` | Mark futuro |
 | Energia/recarga | `/aracne/power/*` | Mark futuro |
-| Módulo aéreo (expansão) | `/aracne/aerial/*` — reservado, não instanciar antes da hora | Muitos anos depois |
+
+> **Nota (arquitetural):** o antigo placeholder `/aracne/aerial/*` (módulo aéreo) foi **retirado** — não existe objetivo de voo. Interfaces mórficas futuras (`/aracne/morph/*`, `/aracne/spine/*`, `/aracne/mode/*`) **ainda não possuem contrato ROS definido** e permanecem **provisórias**; só serão adicionadas a esta tabela quando o módulo correspondente for detalhado.
 
 Cada linha desta segunda tabela só "sobe" para a tabela principal (§3) quando o módulo correspondente for documentado em detalhe — evita definirmos interface para algo que ainda não foi pensado a fundo, o que costuma gerar retrabalho.
 
@@ -67,7 +68,7 @@ Especificação inicial (Mark I) — sintaxe `.msg`/`.srv`:
 float64 x
 float64 y
 float64 z
-string leg_id        # ex.: "leg_1" — já pensado para Mark II com 8 pernas
+string leg_id        # ex.: "leg1" — identifica a perna; papel morfológico futuro ainda SEM contrato ROS definido
 ```
 
 ```
@@ -88,7 +89,7 @@ float64 delta_y
 float64 delta_z
 ```
 
-Nota de design: `LegTarget` já inclui `leg_id` desde o Mark I, mesmo só existindo 1 perna — evita quebrar a mensagem (e todo código que a consome) quando o Mark II adicionar as outras 7. Isso é uma aplicação direta de R6/R1: pagar um custo mínimo agora para não ter que reescrever depois.
+Nota de design: `LegTarget` já inclui `leg_id` desde o Mark I, mesmo só existindo 1 perna — o identificador canônico atual é **`leg1`** (sem underscore), consistente com o código, URDF/xacro e testes. Isso evita quebrar a mensagem (e todo código que a consome) quando o número de pernas e sua organização morfológica forem definidos. É uma aplicação direta de R6/R1: pagar um custo mínimo agora para não ter que reescrever depois.
 
 ## 5. Matriz de Dependências entre Módulos
 

@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Architectural Rebaseline / Morphing Robotics
+
+- Visão futura revisada: de expansão tradicional para **plataforma terrestre** de robótica mórfica biomimética (modos HEXAPOD STABILITY / FELINE DYNAMIC e transformação 6↔4).
+- **Voo saiu do escopo futuro** (remoção do módulo aéreo / /aracne/aerial/* como objetivo).
+- R5 redefinida como **Reserva Morfológica e Dinâmica**. 
+- **Mark I** preservada como **baseline biomecatrônico / bancada de validação de controle**.
+- Roadmap **Mark II+ colocado em revisão** (arquitetura em estudo; não congelado).
+- **E4 redefinido conceitualmente**, ainda **NOT STARTED** e pertencente à Mark I.
+
+> Documental: nada de hardware mórfico, RL, QDD, coluna ou modo felino está implementado.
+
+
 ### Lote E / E3 — Controlled motion pipeline (Mark I)
 
 #### Added

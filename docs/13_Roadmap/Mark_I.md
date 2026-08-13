@@ -15,9 +15,9 @@
 
 ## 1. Objetivo do Mark I
 
-Construir e validar, **inteiramente em simulação**, uma **única perna** do robô octápode, com cinemática inversa funcional e controle de posição, mais o esqueleto de projeto (repositório, pacotes ROS2, pipeline de simulação) que todos os Marks seguintes vão reaproveitar.
+Construir e validar, **inteiramente em simulação**, uma **única perna** do robô, com cinemática inversa funcional e controle de posição, mais o esqueleto de projeto (repositório, pacotes ROS2, pipeline de simulação) que vão servir de **baseline biomecatrônico** e **bancada de validação de controle** para a plataforma mórfica biomimética.
 
-Não é sobre o robô andar. É sobre provar a fundação: URDF parametrizável, IK correta, e o fluxo simulação→controle funcionando de ponta a ponta para 1 perna — porque se isso não funcionar para 1, não vai funcionar para 8.
+Não é sobre o robô andar. É sobre provar a fundação: URDF parametrizável, IK correta, e o fluxo simulação→controle funcionando de ponta a ponta para 1 perna — porque é isso que valida o loop de controle reutilizável pelas futuras pernas da arquitetura mórfica.
 
 ## 2. Por que começar aqui (justificativa do escopo)
 
@@ -76,9 +76,9 @@ Essa estrutura de pacotes é definitiva — Mark II apenas adiciona pacotes (`ar
 
 ## 9. O que fica para o Mark II (não implementar agora)
 
-- Réplica das 8 pernas no mesmo chassi
-- Geração de gait (padrão de caminhada tripé, por exemplo)
-- Primeiro esboço do chassi físico (mas ainda só em simulação)
+- A definição do **Mark II** será **rebaselined segundo a arquitetura mórfica** (hexápode/felino, coluna de rigidez variável, transformação 6↔4) — **não** é mais "simplesmente espelhar 8 pernas".
+- Os requisitos mecânicos, energéticos, de atuação e de transformação precisam ser **derivados** antes de congelar o escopo do Mark II.
+- Geração de gait e primeiro esboço do chassi físico (em simulação) entram apenas quando essa derivação estiver feita.
 
 ---
 

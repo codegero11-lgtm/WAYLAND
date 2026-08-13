@@ -21,18 +21,34 @@
 
 ## 1. Objetivo Final (Mark Final)
 
-Robô octápode (8 pernas, inspiração aracnídea) capaz de:
+Plataforma terrestre de **robótica mórfica biomimética**, capaz de alternar entre duas configurações principais:
 
-- Locomoção em terrenos internos e externos
+1. **HEXAPOD STABILITY MODE ("Modo Aranha")**
+   - 6 pernas ativas;
+   - estabilidade estática extrema e redundância;
+   - progressão em terreno severamente irregular / escombros / superfícies instáveis;
+   - centro de massa baixo;
+   - marcha estática/tripódica;
+   - **coluna em estado rígido/travado** (prioridade: estabilidade e robustez).
+
+2. **FELINE DYNAMIC MODE ("Modo Felino")**
+   - 4 pernas primárias de locomoção;
+   - 2 pernas centrais recolhidas/travadas;
+   - alta mobilidade e corrida dinâmica;
+   - saltos e pousos sucessivos (absorção de impacto);
+   - **coluna em estado dinâmico/complacente**;
+   - possibilidade de armazenamento/devolução de energia elástica (trote/galope/salto).
+
+O conjunto de habilidades prevê:
 - Navegação autônoma e mapeamento (SLAM)
 - Reconhecimento de ambientes, pessoas e objetos (visão computacional)
 - Comandos de voz + conversação via LLM local
-- Aprendizado incremental de novas tarefas
 - Sensoriamento diverso (IMU, LiDAR, câmeras, contato)
-- Retorno automático à base de recarga
-- Execução de pequenas tarefas domésticas
-- Capacidade eventual de pequenos saltos
-- **Módulo de voo**: explicitamente fora do escopo inicial, mas a arquitetura precisa deixar um "encaixe" (interface de payload/expansão) para que ele possa ser adicionado anos depois sem reescrever locomoção, navegação, IA ou percepção.
+- **Transformação de morfologia 6↔4 entre os dois modos (MORPH TRANSITION)**
+
+> **20 km/h** é uma **meta aspiracional de sistema** para o modo dinâmico — **NÃO** é um requisito congelado de atuador. Os requisitos físicos necessários (velocidades, torques, potência, energia) serão **derivados** antes de qualquer decisão de atuação.
+
+> **Não existe mais objetivo de voo / módulo aéreo.** A direção é exclusivamente terrestre. A pasta de documentação `12_Modulo_Aereo_Futuro` permanece como legado **obsoleto** (sem deleção por ora); não deve ser usada como requisito ativo.
 
 ## 2. Restrições de Arquitetura (não-negociáveis)
 
@@ -42,7 +58,7 @@ Estas restrições existem para impedir que decisões de curto prazo (Mark I, Ma
 - **R2 — Simulação antes de hardware:** nenhuma funcionalidade nova entra no robô físico sem antes existir e ser validada em Gazebo/RViz2.
 - **R3 — Baixo acoplamento entre módulos:** comunicação entre módulos só via interfaces bem definidas (tópicos/serviços/ações ROS2), nunca por acesso direto a estado interno de outro módulo.
 - **R4 — Nenhuma dependência proprietária crítica:** qualquer software fechado só pode ser usado se (a) for opcional e (b) existir um caminho open-source equivalente documentado.
-- **R5 — Reserva de payload para o módulo de voo:** desde o Mark que define o chassi definitivo, há um envelope de massa/energia/espaço reservado e não utilizado, para o futuro módulo aéreo.
+- **R5 — Reserva Morfológica e Dinâmica:** nenhuma decisão de chassi, energia, computação ou atuação pode impedir: (a) uma **coluna de rigidez variável** (rígida↔complacente); (b) **compliance passiva ou ativa** em juntas/pernas; (c) **sensoriamento de contato** nas patas; (d) **atuação dinâmica** com reserva de torque/potência/velocidade; (e) a **transformação de morfologia 6↔4**, incluindo **pernas centrais recolhíveis/traváveis**; (f) **margem estrutural para impactos** (saltos/pousos); e (g) **margem energética e instrumentação** para o controle dinâmico (corrida/salto). A arquitetura deve reservar o envelope estrutural, energético e de interface para essas capacidades, **sem fixar mecanismo específico** nesta etapa.
 - **R6 — Cada Mark é uma evolução, não um salto:** nenhuma versão pode introduzir mais de ~2 capacidades genuinamente novas por vez (regra prática de "incremento controlável").
 
 ## 3. Filosofia de Engenharia
@@ -53,7 +69,37 @@ Estas restrições existem para impedir que decisões de curto prazo (Mark I, Ma
 
 Isso se traduz em duas regras práticas de arquitetura de software:
 - **Boundaries por pacote ROS2**: cada módulo (locomoção, visão, navegação, voz, etc.) vive em seu próprio pacote, com uma interface pública mínima (mensagens/serviços/ações customizados) e tudo mais privado.
-- **Configuração > código**: parâmetros de hardware (dimensões de perna, número de servos, portas seriais) ficam em arquivos YAML versionados, nunca hardcoded — isso é o que permite trocar Mark I por Mark II sem reescrever lógica.
+- **Configuração > código**: parâmetros de hardware (dimensões de perna, número de pernas, portas seriais) ficam em arquivos YAML versionados, nunca hardcoded — isso é o que permite evoluir a plataforma sem reescrever lógica.
+
+## 3.1. Arquitetura de Controle (direção futura)
+
+A arquitetura de controle é planejada em **três camadas**:
+
+- **Camada 1 — SAFETY / ACTUATION:** ARM/DISARM; E-stop físico futuro; watchdog; limites; proteção de corrente/temperatura; interlocks; health monitoring.
+- **Camada 2 — MODEL-BASED CONTROL:** cinemática (IK); dinâmica; state estimation; controle de posição/torque/impedância; contato; estabilidade; controle determinístico.
+- **Camada 3 — LEARNED LOCOMOTION:** Reinforcement Learning; sim-to-real; domain randomization.
+
+**Políticas futuras (locomoção):**
+- **PI-H — Hexapod Policy:** estabilidade, footholds, terreno irregular, redundância.
+- **PI-F — Feline Policy:** trote, galope, corrida, coluna dinâmica, salto, pouso, energia elástica.
+- **PI-M — Morph Policy:** transição 6↔4, gestão do centro de massa, recolhimento/liberação das pernas centrais, mudança de rigidez da coluna, estabilidade durante a transformação.
+
+Acima delas, existirá futuramente um **MORPHOLOGY SUPERVISOR**, que decide se uma transição é permitida com base em velocidade, contato, postura, estado da coluna, temperatura, bateria, falhas e estabilidade.
+
+> **Regra:** **RL não controla nem substitui a camada básica de safety/interlocks** (Camada 1 é determinística e soberana).
+
+## 3.2. Simulação (política)
+
+- **Gazebo Harmonic** (via `ros_gz`) permanece o **simulador principal de integração de sistema** ROS2 e validação sistêmica. Nada substitui o Gazebo nesta etapa.
+- Futuros **candidatos complementares** (a avaliar, **sem decisão final**): **MuJoCo** (dinâmica rápida, contato, corrida/salto, experimentação) e **Isaac Gym / Isaac Lab** (treinamento RL massivamente paralelo, domain randomization, políticas PI-H/PI-F/PI-M).
+- **Não** há adopção final de simulador e **não** se abandona o Gazebo.
+
+## 3.3. Marks (política de evolução)
+
+- **Mark I** = baseline biomecatrônico e bancada de validação de controle (uma perna simulada) — **válido e preservado.**
+- **Mark II+** = **arquitetura em estudo**, a ser definida **depois** da derivação dos requisitos mecânicos, energéticos, de atuação e de transformação (morfologia 6↔4, coluna, compliance). **Não há** roadmap Mark II→VIII congelado.
+
+
 
 ## 4. Inventário de Hardware
 

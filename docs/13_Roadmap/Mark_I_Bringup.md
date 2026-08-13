@@ -124,4 +124,4 @@ Qualquer decisão de implementação **não coberta explicitamente** nestes docu
 
 ---
 
-**Mark I: documentação completa.** Próximo passo é o `Mark II` (`13_Roadmap/Mark_II.md` + `04b_Geracao_de_Gait.md`, estendendo para as 8 pernas), quando você quiser seguir.
+**Mark I: documentação completa.** Próximo passo é a definição do **Mark II**, que será **rebaselined segundo a arquitetura mórfica** (hexápode/felino, coluna de rigidez variável, transformação 6↔4) — e **não** mais como "estender para as 8 pernas". Antes de detalhar o Mark II, devem ser derivados os requisitos mecânicos, energéticos, de atuação e de transformação. (A definição do Mark II+ permanece **arquitetura em estudo**.)

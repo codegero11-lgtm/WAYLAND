@@ -2,6 +2,14 @@
 
 > Este arquivo representa o estado validado do Mark I após a conclusão do Lote E (controlled motion pipeline / E3).
 
+## Distinção: implementado atual × missão futura
+
+- **CURRENT IMPLEMENTED SYSTEM:** **Mark I** — baseline biomecatrônico validado (uma perna simulada), com o pipeline de movimento controlado do **Lote E/E3 concluído**. Nada de coluna, 6 pernas, morfologia, felino, quadrúpede, QDD ou RL está implementado.
+- **FUTURE PROJECT MISSION** (visão futura, não implementada): plataforma terrestre de **robótica mórfica biomimética** — alternar entre **HEXAPOD STABILITY MODE** (“Aranha”, hexápode completo, 6 pernas ativas, coluna rígida) e **FELINE DYNAMIC MODE** (“Felino”, quadrúpede, 4 pernas locomotoras + 2 centrais recolhidas, coluna complacente, corrida/saltos), via **MORPH TRANSITION 6↔4**. Coluna de rigidez variável, QDD, RL e transformação 6↔4 são todos **não implementados**.
+- **20 km/h** é **meta aspiracional** de sistema, não requisito validado hoje e não capacidade já atingida.
+- **Não existe modo voo** na visão futura.
+- **E4 = NOT STARTED** e ainda pertence à **Mark I**.
+
 ## Identificação
 
 - Projeto: WAYLAND
@@ -52,5 +60,5 @@
 
 ## Próximo objetivo
 
-- Próxima etapa: **E4** — evolução do pipeline de movimento controlado (ex.: múltiplos targets únicos sequenciais, política de retorno/estado parado, e análise de limites no controller manager). **Não implementado ainda; não definido como concluído.**
+- Próxima etapa: **E4 — NOT STARTED.** Direção aprovada: consolidar o baseline da **Mark I** com **múltiplos targets controlados**, tracking, comportamento seguro de **parada/home** e safety verificável, **preservando SAFE OFF, ARM/DISARM, one-active-goal e limites**. E4 permanece **Mark I** e **não** implementa morphing, coluna, RL, hardware, seis pernas, quadrúpede nem QDD.
 

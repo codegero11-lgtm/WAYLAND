@@ -156,8 +156,9 @@ colcon build --symlink-install --packages-select aracne_teleop aracne_bringup # 
 ## Observações
 
 - Lotes A, B, B.1, C e D do Mark I concluídos e validados.
+
+- **Nota de decisão arquitetural (posterior ao Lote E):** a visão de futuro do projeto evoluiu para **robótica mórfica biomimética** (plataforma terrestre com modos HEXAPOD STABILITY / FELINE DYNAMIC, coluna de rigidez variável e transformação 6↔4). Essa decisão é **posterior** ao Lote E e **não** retroage os requisitos R-M1-* aqui registrados, que permanecem válidos como baseline da Mark I. Nenhuma interface mórfica ainda possui contrato ROS definido (ver `01b_Contratos_de_Interface_ROS2.md`).
+- A rastreabilidade dos Lotes A, B, B.1 e C permanece válida.
 - O Lote D resolveu: parse de `mark1_params.yaml` (D1), CRLF dos scripts Python (D2) e bridge legado `joint_angles` (D3).
 - Problemas remanescentes (overlay/`AMENT_PREFIX_PATH`, `GZ_SIM_SYSTEM_PLUGIN_PATH`, warnings KDL/update-period, pipeline ponta-a-ponta de movimento) **não** são marcados como resolvidos — registrados em `TECH_DEBT.md`.
-- A rastreabilidade dos Lotes A, B, B.1 e C permanece válida.
-
 
